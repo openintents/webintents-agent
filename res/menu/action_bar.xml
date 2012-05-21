@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_backward"
+        android:icon="@drawable/ic_menu_backward"
+        android:showAsAction="ifRoom"
+        android:title="Backward">
+    </item>
+    <item
+        android:id="@+id/menu_forward"
+        android:icon="@drawable/ic_menu_forward"
+        android:showAsAction="ifRoom"
+        android:title="Forward">
+    </item>
+    <item
+        android:id="@+id/menu_refresh"
+        android:icon="@drawable/ic_menu_refresh"
+        android:showAsAction="ifRoom"
+        android:title="Refresh">
+    </item>
+    <item
+        android:id="@+id/menu_addr_bar"
+        android:actionViewClass="android.widget.SearchView"
+        android:showAsAction="always">
+    </item>
+    <item
+        android:id="@+id/menu_home"
+        android:icon="@drawable/ic_menu_home"
+        android:showAsAction="ifRoom"
+        android:title="Home">
+    </item>
+    <item
+        android:id="@+id/menu_registered_apps"
+        android:title="@string/registered_apps">
+    </item>
+
+</menu>

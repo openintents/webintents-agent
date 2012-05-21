@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, OIWebIntentsAgentActivity!</string>
+    <string name="app_name">OI WebIntents Agent</string>
+    <string name="registered_apps">Registered applications</string>
+
+</resources>
