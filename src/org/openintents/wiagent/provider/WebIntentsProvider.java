@@ -107,6 +107,7 @@ public class WebIntentsProvider extends ContentProvider {
         if (rowID > 0) {
             return ContentUris.withAppendedId(Intents.CONTENT_URI, rowID);
         }
+        db.close();
         throw new SQLException("Failed to insert row into " + uri);
     }
 
@@ -135,6 +136,7 @@ public class WebIntentsProvider extends ContentProvider {
         }
         
         SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+        String qs = qb.buildQuery(projection, selection, null, null, sortOrder, null);
         Cursor c = qb.query(db, projection, selection, selectionArgs, 
                 null, null, sortOrder);
         return c;
