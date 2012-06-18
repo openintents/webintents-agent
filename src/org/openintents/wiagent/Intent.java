@@ -4,9 +4,9 @@ import android.net.Uri;
 
 public class Intent {
 
-    String action;
-    String type;
-    Uri url;
+    public String action;
+    public String type;
+    public Uri url;
     
     /**
      * @deprecated

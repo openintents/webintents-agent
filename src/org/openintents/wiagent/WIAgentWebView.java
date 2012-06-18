@@ -54,35 +54,34 @@ import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 
 public class WIAgentWebView extends Activity 
-        implements SearchView.OnQueryTextListener, DialogInterface.OnDismissListener {    
+implements SearchView.OnQueryTextListener, DialogInterface.OnDismissListener {    
 
-    private EditText etUrl;
+    //    private EditText etUrl;
     private WebView mWebView;
-    private InputMethodManager manager;
     private SearchView mSearchView;
     private Message mOnDismissMessage;
-    
+
     private static final int HANDLER_WHAT_HTML_REVISED = 1;
- 
-    
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.browser);
-        
+        //        setContentView(R.layout.main);
+
         mWebView = (WebView) findViewById(R.id.webView);
-        
-        etUrl = (EditText) findViewById(R.id.menu_addr_bar);
-        
+
+        //        etUrl = (EditText) findViewById(R.id.menu_addr_bar);
+
         mWebView.requestFocus();
         mWebView.getSettings().setJavaScriptEnabled(true);
-//        mWebView.getSettings().setLoadWithOverviewMode(true);
-//        mWebView.getSettings().setUseWideViewPort(true);
-        
+        //        mWebView.getSettings().setLoadWithOverviewMode(true);
+        //        mWebView.getSettings().setUseWideViewPort(true);
+
         mWebView.setWebViewClient(new WebViewClient() {
-            
-            
-            
+
+
+
             @Override
             public void onReceivedHttpAuthRequest(WebView view,
                     HttpAuthHandler handler, String host, String realm) {
@@ -96,10 +95,10 @@ public class WIAgentWebView extends Activity
                 // TODO Auto-generated method stub
                 super.onReceivedLoginRequest(view, realm, account, args);
             }
-            
-            
 
-//            @Override
+
+
+            //            @Override
             public void onPageFinished(WebView view, String url) {
                 // TODO Auto-generated method stub
                 super.onPageFinished(view, url);
@@ -119,18 +118,18 @@ public class WIAgentWebView extends Activity
                 }
                 return true;
             }
-            
+
         });
-        
+
         mWebView.setWebChromeClient(new WebChromeClient());
-        
+
         mWebView.addJavascriptInterface(new WebIntentsService(this), "WIService");
 
-        manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");  
-//        mWebView.loadUrl("http://examples.webintents.org/intents/pick/pick.html");
-        mWebView.loadUrl("file:///android_asset/www/index.html");
-//        mWebView.loadUrl("https://twitter.com/intent/tweet");
+        //        (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        //        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");  
+        //        mWebView.loadUrl("http://examples.webintents.org/intents/pick/pick.html");
+        //        mWebView.loadUrl("file:///android_asset/www/index.html");
+        mWebView.loadUrl("https://twitter.com/intent/session");
     }
 
     @Override
@@ -141,7 +140,7 @@ public class WIAgentWebView extends Activity
         setupSearchView(searchItem);
         return true;
     }
-    
+
     private void setupSearchView(MenuItem searchItem) {
         mSearchView = (SearchView) searchItem.getActionView();
         mSearchView.setIconifiedByDefault(false);       
@@ -157,45 +156,45 @@ public class WIAgentWebView extends Activity
                 mWebView.goBack();
             }         
             break;
-            
+
         case R.id.menu_forward:
             if (mWebView.canGoForward()) {
                 mWebView.goForward();
             }       
             break;
-            
+
         case R.id.menu_home:
             mWebView.loadUrl("http://webintents.org/");
             break;
-            
+
         case R.id.menu_refresh:
             mWebView.reload();
             break;
-            
+
         case R.id.menu_registered_apps:
             Dialog d = new Dialog(this);
             d.setTitle("Registered Applications");
             String[] mProjection = {
-                WebIntentsProvider.Intents.ID,    
-                WebIntentsProvider.Intents.TITLE,
-                WebIntentsProvider.Intents.HREF
+                    WebIntentsProvider.Intents.ID,    
+                    WebIntentsProvider.Intents.TITLE,
+                    WebIntentsProvider.Intents.HREF
             };
-            
+
             Cursor mCursor = getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
                     mProjection, null, null, null);
-            
+
             ListView mAppList = new ListView(this);
-            
+
             String[] mColumns = {
-                WebIntentsProvider.Intents.TITLE,
-                WebIntentsProvider.Intents.HREF
+                    WebIntentsProvider.Intents.TITLE,
+                    WebIntentsProvider.Intents.HREF
             };
-            
+
             int[] mViewIDs = {
-                android.R.id.text1,
-                android.R.id.text2
+                    android.R.id.text1,
+                    android.R.id.text2
             };
-            
+
             mAppList.setAdapter(new SimpleCursorAdapter(this, 
                     android.R.layout.simple_list_item_2, mCursor, mColumns, mViewIDs));
             d.setContentView(mAppList);
@@ -220,7 +219,7 @@ public class WIAgentWebView extends Activity
         mWebView.loadUrl(query);
         return false;
     }
-    
+
     private Handler HttpURLConnectThreadHandler = new Handler() {
 
         @Override
@@ -234,11 +233,11 @@ public class WIAgentWebView extends Activity
             }   
         }           
     };
-    
+
     private class HttpURLConnectionThread extends Thread {
-        
+
         private URL url;
-        
+
         public HttpURLConnectionThread(URL url) {
             super();
             this.url = url;
@@ -251,7 +250,7 @@ public class WIAgentWebView extends Activity
             try {
                 urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream (urlConnection.getInputStream());
-                
+
                 Document doc = Jsoup.parse(in, "UTF-8", url.toString());
                 Elements oldJsIntentsList = doc.select("script[src]");
                 for (Element oldJsIntents : oldJsIntentsList) {
@@ -262,21 +261,21 @@ public class WIAgentWebView extends Activity
                     }
                 }
                 String jsIntents = 
-                		"var Intent = function(action, type) {" +
-            		        "this.action = action;" +
-            		        "this.type = type;" +
-//            		        "this.href = href;" +
-        		        "};" +
-        		        "var Navigator = function() {};" +
-        		        "Navigator.prototype.startActivity = function(intent) {" +
-        		            "WIService.startActivity(intent.action, intent.type);" +
-    		            "};" +
-    		            "window.navigator = new Navigator();";
+                        "var Intent = function(action, type) {" +
+                                "this.action = action;" +
+                                "this.type = type;" +
+                                //            		        "this.href = href;" +
+                                "};" +
+                                "var Navigator = function() {};" +
+                                "Navigator.prototype.startActivity = function(intent) {" +
+                                "WIService.startActivity(intent.action, intent.type);" +
+                                "};" +
+                                "window.navigator = new Navigator();";
                 doc.head().appendElement("script")
-                    .attr("type", "text/javascript")
-                    .html(jsIntents);  
-                HtmlMessage msg = new HtmlMessage(url.toString(), doc.outerHtml());
-                HttpURLConnectThreadHandler.obtainMessage(HANDLER_WHAT_HTML_REVISED, msg).sendToTarget();
+                .attr("type", "text/javascript")
+                .html(jsIntents);  
+//                HtmlMessage msg = new HtmlMessage(url.toString(), doc.outerHtml());
+//                HttpURLConnectThreadHandler.obtainMessage(HANDLER_WHAT_HTML_REVISED, msg).sendToTarget();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -286,9 +285,9 @@ public class WIAgentWebView extends Activity
                 }
             }
         }
-        
+
     }
-    
+
     private class WebIntentsService implements Intents {
         private Context mContext;    
 
@@ -368,12 +367,11 @@ public class WIAgentWebView extends Activity
             d.show();
         }
     }
-    
+
     @Override
     public void onDismiss(DialogInterface dialog) {
-        // TODO Auto-generated method stub
         String url = ((Intent) mOnDismissMessage.obj).url.toString();
         mWebView.loadUrl(url);
     }
-    
+
 }
