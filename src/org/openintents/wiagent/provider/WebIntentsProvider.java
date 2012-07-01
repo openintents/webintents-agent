@@ -36,23 +36,38 @@ public class WebIntentsProvider extends ContentProvider {
         
     }
     
+    // table 'web_android_map'
+    public static class WebAndroidMap {
+        
+        public static final String TABLE_NAME = "web_android_map";
+        
+        // columns
+        public static final String ID = "_id";
+        public static final String WEB_ACTION = "web_action";
+        public static final String ANDROID_ACTION ="android_action";
+        
+        public static final Uri CONTENT_URI =
+                Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
+        
+    }    
     
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     
     // Uri code
     private static final int INTENTS = 1;
     private static final int INTENTS_ID = 2;
+    private static final int WEB_ANDRIOD_MAP = 3;
     
     static {
         URI_MATCHER.addURI(AUTHORITY, Intents.TABLE_NAME, INTENTS);
         URI_MATCHER.addURI(AUTHORITY, Intents.TABLE_NAME + "/#", INTENTS_ID);
+        URI_MATCHER.addURI(AUTHORITY, WebAndroidMap.TABLE_NAME, WEB_ANDRIOD_MAP);
     }
     
     private static class DatabaseOpenHelper extends SQLiteOpenHelper {
 
         public DatabaseOpenHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
-            // TODO Auto-generated constructor stub
         }
 
         @Override
@@ -71,10 +86,23 @@ public class WebIntentsProvider extends ContentProvider {
             ContentValues values = new ContentValues();
             values.put(Intents.ACTION, "http://webintents.org/share");
             values.put(Intents.TYPE, "text/uri-list");
-            values.put(Intents.HREF, "https://twitter.com/intent/tweet");
-            values.put(Intents.TITLE, "Twitter");
+            values.put(Intents.HREF, "file:///android_asset/www/service/twitter_text_share.html");
+            values.put(Intents.TITLE, "Share Link to Twitter");
             values.put(Intents.DISPOSITION, "inline");
             db.insert(Intents.TABLE_NAME, null, values);
+            
+            sql = "CREATE TABLE " + WebAndroidMap.TABLE_NAME + " (" +
+                    WebAndroidMap.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    WebAndroidMap.WEB_ACTION + " TEXT NOT NULL, " +
+                    WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL" +
+                    ");";
+            
+            db.execSQL(sql);
+            
+            values.clear();
+            values.put(WebAndroidMap.WEB_ACTION, "http://webintents.org/share");
+            values.put(WebAndroidMap.ANDROID_ACTION, "android.intent.action.SEND");
+            db.insert(WebAndroidMap.TABLE_NAME, null, values);
         }
 
         @Override
@@ -107,6 +135,7 @@ public class WebIntentsProvider extends ContentProvider {
         if (rowID > 0) {
             return ContentUris.withAppendedId(Intents.CONTENT_URI, rowID);
         }
+        db.close();
         throw new SQLException("Failed to insert row into " + uri);
     }
 
@@ -129,12 +158,17 @@ public class WebIntentsProvider extends ContentProvider {
             qb.setTables(Intents.TABLE_NAME);
             qb.appendWhere(Intents.ID + "=" + uri.getPathSegments().get(1));
             break;
+            
+        case WEB_ANDRIOD_MAP:
+            qb.setTables(WebAndroidMap.TABLE_NAME);
+            break;
 
         default:
             break;
         }
         
         SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
+        String qs = qb.buildQuery(projection, selection, null, null, sortOrder, null);
         Cursor c = qb.query(db, projection, selection, selectionArgs, 
                 null, null, sortOrder);
         return c;

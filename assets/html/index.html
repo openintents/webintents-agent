@@ -1,0 +1,27 @@
+<html>
+<head>
+<title>OI WebIntents Agent Test -- Clientside</title>
+</head>
+<body>
+	<h2>Simple Share</h2>
+	<input id="url" type="url" value="http://paul.kinlan.me" name="url">
+	<button id="shareLink">Share link</button>
+	<script>
+    /* function Intent(action, type) {
+        this.action = action;
+        this.type = type;
+        }
+function Navigator() {}
+Navigator.prototype.startActivity = function(intent) {
+WIService.startActivity(intent.action, intent.type);
+}
+window.navigator = new Navigator();*/
+		var shareLink = document.getElementById("shareLink");
+		var url = document.getElementById("url").value;
+		var intent = new Intent("http://webintents.org/share", "text/uri-list");
+		shareLink.addEventListener("click", function() {
+			window.navigator.startActivity(intent);
+		});
+	</script>
+</body>
+</html>

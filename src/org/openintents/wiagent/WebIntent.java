@@ -1,24 +1,23 @@
 package org.openintents.wiagent;
 
-import android.net.Uri;
-
-public class Intent {
+public class WebIntent {
 
     public String action;
     public String type;
-    public Uri url;
+    public String data;
     
     /**
      * @deprecated
      */
-    public Intent() {
+    public WebIntent() {
         super();
     }
 
-    public Intent(String action, String type) {
+    public WebIntent(String action, String type, String data) {
         super();
         this.action = action;
         this.type = type;
+        this.data = data;
     }
     
 }
