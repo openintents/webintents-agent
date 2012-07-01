@@ -18,16 +18,30 @@ public final class R {
         public static final int ic_menu_refresh=0x7f020004;
     }
     public static final class id {
-        public static final int menu_addr_bar=0x7f060004;
-        public static final int menu_backward=0x7f060001;
-        public static final int menu_forward=0x7f060002;
-        public static final int menu_home=0x7f060005;
-        public static final int menu_refresh=0x7f060003;
-        public static final int menu_registered_apps=0x7f060006;
-        public static final int webView=0x7f060000;
+        public static final int android_app=0x7f060003;
+        public static final int android_app_header=0x7f060002;
+        public static final int android_app_icon=0x7f060005;
+        public static final int android_app_label=0x7f060006;
+        public static final int list_header=0x7f060004;
+        public static final int menu_addr_bar=0x7f06000e;
+        public static final int menu_backward=0x7f06000b;
+        public static final int menu_forward=0x7f06000c;
+        public static final int menu_home=0x7f06000f;
+        public static final int menu_refresh=0x7f06000d;
+        public static final int menu_registered_apps=0x7f060010;
+        public static final int section_divider=0x7f060007;
+        public static final int subtitle=0x7f060009;
+        public static final int title=0x7f060008;
+        public static final int webView=0x7f06000a;
+        public static final int web_app=0x7f060001;
+        public static final int web_app_header=0x7f060000;
     }
     public static final class layout {
-        public static final int main=0x7f030000;
+        public static final int dialog_suggested_apps=0x7f030000;
+        public static final int list_header=0x7f030001;
+        public static final int list_item_android_app=0x7f030002;
+        public static final int list_item_suggested_apps=0x7f030003;
+        public static final int main=0x7f030004;
     }
     public static final class menu {
         public static final int action_bar=0x7f050000;

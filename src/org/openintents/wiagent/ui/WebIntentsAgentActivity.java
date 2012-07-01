@@ -4,79 +4,85 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
-import java.net.CookieHandler;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openintents.wiagent.CustomWebView;
-import org.openintents.wiagent.Intent;
+import org.openintents.wiagent.WebIntent;
 import org.openintents.wiagent.Intents;
 import org.openintents.wiagent.R;
 import org.openintents.wiagent.provider.WebIntentsProvider;
+import org.openintents.wiagent.ui.widget.AndroidAppListAdapter;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
-import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.net.http.SslCertificate;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
-import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.CookieManager;
-import android.webkit.HttpAuthHandler;
+import android.webkit.JsResult;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 public class WebIntentsAgentActivity extends Activity
-        implements SearchView.OnQueryTextListener, DialogInterface.OnDismissListener {
+        implements SearchView.OnQueryTextListener {
     
     private CustomWebView mWebView;
     private SearchView mSearchView;
+    
+    private static final int DISMISSMESSAGE_WHAT_WEBINTENTS = 1;
     private Message mOnDismissMessage;
+    
+    private ValueCallback<Uri> mUploadFile;
+    private final static int FILECHOOSER_RESULTCODE = 1;
+    
+    private Handler mUIThreadHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        mUIThreadHandler = new Handler();
+        
         setContentView(R.layout.main);
         
         mWebView = (CustomWebView) findViewById(R.id.webView);
+        mWebView.setContext(this);
         mWebView.getSettings().setJavaScriptEnabled(true);
-        mWebView.setWebViewClient(new WebViewClient() {
-            
+        mWebView.setWebViewClient(new WebViewClient() { 
+
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view,
                     String url) {
@@ -85,7 +91,7 @@ public class WebIntentsAgentActivity extends Activity
                     HttpURLConnection urlConnection = null;
                     InputStream in = null;
                     try { 
-                        urlConnection = (HttpURLConnection) new URL(url).openConnection(); 
+                        urlConnection = (HttpURLConnection) (new URL(url)).openConnection(); 
                         
                         // Set cookies in requests
                         CookieManager cookieManager = CookieManager.getInstance();                    
@@ -107,28 +113,31 @@ public class WebIntentsAgentActivity extends Activity
                        
                         Document doc = Jsoup.parse(in, "UTF-8", url.toString());
                         
-                        Elements oldJsIntentsList = doc.select("script[src]");
-                        for (Element oldJsIntents : oldJsIntentsList) {
-                            String value = oldJsIntents.attr("src");
+                        // Remove shim files
+                        Elements scriptsWithSrc = doc.select("script[src]");
+                        for (Element scriptWithSrc : scriptsWithSrc) {
+                            String value = scriptWithSrc.attr("src");
                             if (value.contains("webintents.min.js") ||
                                     value.contains("webintents-prefix.js")) {
-                                oldJsIntents.remove();
+                                scriptWithSrc.remove();
                             }
                         }
-                        String jsIntents = 
-                                "var Intent = function(action, type) {" +
+                        
+                        String scriptToInject = 
+                                "var Intent = function(action, type, data) {" +
                                     "this.action = action;" +
                                     "this.type = type;" +
-//                                      "this.href = href;" +
+                                    "this.data = data;" +
                                 "};" +
                                 "var Navigator = function() {};" +
                                 "Navigator.prototype.startActivity = function(intent) {" +
-                                    "navigatorAndroid.startActivity(intent.action, intent.type);" +
+                                    "navigatorAndroid.startActivity(intent.action, intent.type, intent.data);" +
                                 "};" +
                                 "window.navigator = new Navigator();";
-                        doc.head().appendElement("script")
+                        
+                        doc.head().prependElement("script")
                             .attr("type", "text/javascript")
-                            .html(jsIntents);
+                            .html(scriptToInject);
                         in = new ByteArrayInputStream(doc.outerHtml().getBytes("UTF-8"));                         
                     } catch (IOException e) {
                         e.printStackTrace();                        
@@ -136,11 +145,12 @@ public class WebIntentsAgentActivity extends Activity
                         if (urlConnection != null) {
                             urlConnection.disconnect();
                         } 
-                        if (in != null) {
-                            return new WebResourceResponse("text/html", "utf8", in);
-                        } else {
-                            return null;
-                        }
+                    }
+                    
+                    if (in != null) {
+                        return new WebResourceResponse("text/html", "utf8", in);
+                    } else {
+                        return null;
                     }
                 } else {
                     return super.shouldInterceptRequest(view, url);
@@ -155,12 +165,30 @@ public class WebIntentsAgentActivity extends Activity
             }
             
         });
-        mWebView.setWebChromeClient(new WebChromeClient());
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            
+            // File chooser of WebView, hidden by the document
+            public void openFileChooser(ValueCallback<Uri> uploadFile, String acceptType) {
+                mUploadFile = uploadFile;
+                android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_GET_CONTENT);  
+                intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);  
+                intent.setType(acceptType);  
+                WebIntentsAgentActivity.this.startActivityForResult(intent.createChooser(intent, "Choose file using"), FILECHOOSER_RESULTCODE); 
+            }
+
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message,
+                    JsResult result) {
+                // TODO Auto-generated method stub
+                return super.onJsAlert(view, url, message, result);
+            }
+            
+        });
         
         mWebView.addJavascriptInterface(new Navigator(this), "navigatorAndroid");
-        mWebView.loadUrl("http://examples.webintents.org/intents/share/share.html");
-        
-//        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
+//        mWebView.loadUrl("http://examples.webintents.org/intents/share/share.html");
+//        mWebView.loadUrl("javascritp:");
+        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
 //        mWebView.loadUrl("http://examples.webintents.org/intents/shorten/shorten.html");
 //        mWebView.loadUrl("https://twitter.com/intent/session");
 //        mWebView.loadUrl("https://m.facebook.com/"); 
@@ -175,7 +203,24 @@ public class WebIntentsAgentActivity extends Activity
         setupSearchView(searchItem);
         return true;
     }
-    
+        
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+            android.content.Intent data) {
+        switch (requestCode) {
+        case FILECHOOSER_RESULTCODE:
+            Uri result = null;
+            if (resultCode == RESULT_OK) {
+                result = data.getData();
+                mUploadFile.onReceiveValue(result);
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
     private void setupSearchView(MenuItem searchItem) {
         mSearchView = (SearchView) searchItem.getActionView();
         mSearchView.setIconifiedByDefault(false);       
@@ -253,57 +298,43 @@ public class WebIntentsAgentActivity extends Activity
         return false;
     }
 
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        String url = ((Intent) mOnDismissMessage.obj).url.toString();
-        mWebView.loadUrl(url);        
-    }
-    
     private class Navigator implements Intents {
-        private Context mContext;    
-
+        
+        private Context mContext;
+        
         public Navigator(Context mContext) {
             super();
             this.mContext = mContext;
         }
 
-        public void alert(String msg) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setMessage(msg)
-            .setCancelable(false)
-            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    dialog.cancel();
-                }
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-
-        public void startActivity(String action, String type) {
-            startActivity(new Intent(action, type)); 
+        public void startActivity(String action, String type, String data) {
+            startActivity(new WebIntent(action, type, data));
         }
 
         @Override
-        public void startActivity(Intent intent) {
+        public void startActivity(final WebIntent webIntent) {
 
             final Dialog d = new Dialog(mContext);
+            d.setContentView(R.layout.dialog_suggested_apps);
+            
             d.setTitle("Suggested Applications");
-            String[] mProjection = {
+            
+            ListView webAppListView = (ListView) d.findViewById(R.id.web_app);
+            ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);            
+            
+            String[] projectionWebIntents = {
                     WebIntentsProvider.Intents.ID,    
                     WebIntentsProvider.Intents.TITLE,
                     WebIntentsProvider.Intents.HREF
             };
 
-            String selection = WebIntentsProvider.Intents.ACTION + " = ?";
-            String[] selectionArgs = { intent.action };
+            String selectionWebIntents = WebIntentsProvider.Intents.ACTION + " = ?";
+            String[] selectionArgsWebIntents = { webIntent.action };
 
-            Cursor mCursor = mContext.getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
-                    mProjection, selection, selectionArgs, null);
+            Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
+                    projectionWebIntents, selectionWebIntents, selectionArgsWebIntents, null);            
 
-            final ListView mAppList = new ListView(mContext);
-
-            String[] mColumns = {
+            String[] columnWebIntents = {
                     WebIntentsProvider.Intents.TITLE,
                     WebIntentsProvider.Intents.HREF
             };
@@ -312,29 +343,81 @@ public class WebIntentsAgentActivity extends Activity
                     android.R.id.text1,
                     android.R.id.text2
             };
-
-            mAppList.setAdapter(new SimpleCursorAdapter(mContext, 
-                    android.R.layout.simple_list_item_2, mCursor, mColumns, mViewIDs));
-
-            mAppList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            
+            webAppListView.setAdapter(new SimpleCursorAdapter(mContext, 
+                    android.R.layout.simple_list_item_2, cursorWebIntents, columnWebIntents, mViewIDs, 0));
+            
+            final WebIntent fWebIntent = webIntent;
+           
+            webAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position,
-                        long id) {
-                    Cursor cursor = ((SimpleCursorAdapter) mAppList.getAdapter()).getCursor();
-                    cursor.moveToPosition(position);
-                    String href = cursor.getString(2);
-                    Intent intent = new Intent();
-                    intent.url = Uri.parse(href);
-                    mOnDismissMessage = Message.obtain();
-                    mOnDismissMessage.obj = intent;
+                        long id) { 
                     d.dismiss();
+                    Cursor cursor = ((SimpleCursorAdapter) parent.getAdapter()).getCursor();
+                    cursor.moveToPosition(position);
+                    final String href = cursor.getString(2); 
+                    
+                    mUIThreadHandler.post(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            mWebView.loadUrl(href, fWebIntent);    
+                        }
+                        
+                    });
                 }
 
             });
+            
+            String[] projectionAndroidIntents = {
+                    WebIntentsProvider.WebAndroidMap.ID,    
+                    WebIntentsProvider.WebAndroidMap.ANDROID_ACTION
+            };
+            
+            String selectionAndroidIntents = WebIntentsProvider.WebAndroidMap.WEB_ACTION + " = ?";
+            String[] selectionArgsAndroidIntents = { webIntent.action };
+            
+            Cursor cursorAndroidIntents = mContext.getContentResolver().query(WebIntentsProvider.WebAndroidMap.CONTENT_URI, 
+                    projectionAndroidIntents, selectionAndroidIntents, selectionArgsAndroidIntents, null);
+            
+            PackageManager pm = mContext.getPackageManager();
+            
+            List<ResolveInfo> androidApps = new ArrayList<ResolveInfo>();
+            
+            if (cursorAndroidIntents != null) {
+                while (cursorAndroidIntents.moveToNext()) {
+                    String androidAction = cursorAndroidIntents.
+                            getString(cursorAndroidIntents.getColumnIndex(WebIntentsProvider.WebAndroidMap.ANDROID_ACTION));
+                    Intent androidIntent = new Intent(androidAction);
+                    androidIntent.setType(webIntent.type);
+                    List<ResolveInfo> listPerIntent = pm.queryIntentActivities(androidIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                    for (ResolveInfo ri : listPerIntent) {                        
+                        if (!androidApps.contains(ri)) {
+                            androidApps.add(ri);
+                        }
+                    }
+                }
+            }
+            
+            androidAppListView.setAdapter(new AndroidAppListAdapter(mContext, R.layout.list_item_android_app, androidApps));
+            androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position,
+                        long id) {  
+                    d.dismiss();
+                    Adapter adapter = (AndroidAppListAdapter) parent.getAdapter();
+                    ResolveInfo ri = (ResolveInfo) adapter.getItem(position);
+                    Intent intent = new Intent();
+                    intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
+                    intent.putExtra(Intent.EXTRA_TEXT, webIntent.data);
+                    mContext.startActivity(intent);
+                }
 
-            d.setContentView(mAppList);
-            d.setOnDismissListener(WebIntentsAgentActivity.this);
+            });
+            
             d.show();
         }
     }
