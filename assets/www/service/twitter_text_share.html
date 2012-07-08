@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script>
+    <script>      
       var intent = window.intent || window.webkitIntent;
-      if(intent) {
+      if (intent) {
         if(intent.type === "text/uri-list") {
           var href = "https://twitter.com/intent/tweet?url=" +
               encodeURI(intent.data);
@@ -17,5 +17,4 @@
       }
     </script>
   </head>
-  <body>Hello</body>
 </html>

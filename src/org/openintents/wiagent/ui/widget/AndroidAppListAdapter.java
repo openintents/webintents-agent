@@ -17,31 +17,48 @@ import android.widget.TextView;
 public class AndroidAppListAdapter extends ArrayAdapter<ResolveInfo> {
     
     private Context mContext;
-    private List<ResolveInfo> objects;
-    private int textViewResourceId;
+    private LayoutInflater mInflater;
+    private PackageManager mPackageManager;
     
+    private List<ResolveInfo> mObjects;
 
-    public AndroidAppListAdapter(Context context, int textViewResourceId,
-            List<ResolveInfo> objects) {
-        super(context, textViewResourceId, objects);
-        this.mContext = context;
-        this.objects = objects;
-        this.textViewResourceId = textViewResourceId;
+    public AndroidAppListAdapter(Context context, List<ResolveInfo> objects) {
+        super(context, R.layout.list_item_android_app, objects);
+        mContext = context;
+        mObjects = objects;       
+        mInflater = (LayoutInflater) mContext
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mPackageManager = mContext.getPackageManager();
     }
     
     @Override
     public View getView(int position, View convertView,
             ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) mContext
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-     
-        View rowView = inflater.inflate(textViewResourceId, parent, false);
-        TextView textView = (TextView) rowView.findViewById(R.id.android_app_label);
-        ImageView imageView = (ImageView) rowView.findViewById(R.id.android_app_icon);
-        PackageManager pm = mContext.getPackageManager();
-        textView.setText(objects.get(position).loadLabel(pm).toString());
-        imageView.setImageDrawable(objects.get(position).loadIcon(pm));
-        return rowView;
+        ViewHolder viewHolder;
+        
+        if (convertView == null) {
+            convertView = mInflater.inflate(R.layout.list_item_android_app, null);
+            
+            viewHolder = new ViewHolder();
+            viewHolder.text = (TextView) convertView.findViewById(R.id.android_app_label);
+            viewHolder.icon = (ImageView) convertView.findViewById(R.id.android_app_icon);
+            
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
+
+        viewHolder.text.setText(mObjects.get(position).loadLabel(mPackageManager).toString());
+        viewHolder.icon.setImageDrawable(mObjects.get(position).loadIcon(mPackageManager));
+
+        return convertView;
+    }
+    
+    private static class ViewHolder {
+        
+        TextView text;
+        ImageView icon;
+        
     }
 
 }

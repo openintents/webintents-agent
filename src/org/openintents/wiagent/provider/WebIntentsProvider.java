@@ -13,15 +13,13 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 public class WebIntentsProvider extends ContentProvider {
-    
-    public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "intents.db";    
-    public static final String AUTHORITY = "WebIntentsProvider";
+     
+    public static final String AUTHORITY = "org.openintents.wiagent";
     
     // table 'intents'
-    public static class Intents {
+    public static class WebIntents {
         
-        public static final String TABLE_NAME = "intents";
+        public static final String TABLE_NAME = "web_intents";
         
         // columns
         public static final String ID = "_id";
@@ -33,6 +31,9 @@ public class WebIntentsProvider extends ContentProvider {
         
         public static final Uri CONTENT_URI =
                 Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
+        
+        public static final Uri CONTENT_URI_INMEMORY =
+                Uri.parse("content://" + AUTHORITY + "/inmemory/" + TABLE_NAME);
         
     }
     
@@ -56,64 +57,20 @@ public class WebIntentsProvider extends ContentProvider {
     // Uri code
     private static final int INTENTS = 1;
     private static final int INTENTS_ID = 2;
-    private static final int WEB_ANDRIOD_MAP = 3;
+    private static final int INTENTS_INMEMORY = 3;
+    private static final int INTENTS_ID_INMEMORY = 4;
+    private static final int WEB_ANDRIOD_MAP = 5;
     
     static {
-        URI_MATCHER.addURI(AUTHORITY, Intents.TABLE_NAME, INTENTS);
-        URI_MATCHER.addURI(AUTHORITY, Intents.TABLE_NAME + "/#", INTENTS_ID);
+        URI_MATCHER.addURI(AUTHORITY, WebIntents.TABLE_NAME, INTENTS);
+        URI_MATCHER.addURI(AUTHORITY, WebIntents.TABLE_NAME + "/#", INTENTS_ID);
+        URI_MATCHER.addURI(AUTHORITY, "inmemory/" + WebIntents.TABLE_NAME, INTENTS_INMEMORY);
+        URI_MATCHER.addURI(AUTHORITY, "inmemory/" + WebIntents.TABLE_NAME + "/#", INTENTS_ID_INMEMORY);
         URI_MATCHER.addURI(AUTHORITY, WebAndroidMap.TABLE_NAME, WEB_ANDRIOD_MAP);
     }
     
-    private static class DatabaseOpenHelper extends SQLiteOpenHelper {
-
-        public DatabaseOpenHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            String sql;
-            sql = "CREATE TABLE " + Intents.TABLE_NAME + " (" +
-                    Intents.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    Intents.ACTION + " TEXT NOT NULL, " +
-                    Intents.TYPE + " TEXT NOT NULL, " +
-                    Intents.HREF + " TEXT NOT NULL, " +
-                    Intents.TITLE + " TEXT NOT NULL, " +
-                    Intents.DISPOSITION + " TEXT NOT NULL" +
-                    ");";
-            db.execSQL(sql);
-            
-            ContentValues values = new ContentValues();
-            values.put(Intents.ACTION, "http://webintents.org/share");
-            values.put(Intents.TYPE, "text/uri-list");
-            values.put(Intents.HREF, "file:///android_asset/www/service/twitter_text_share.html");
-            values.put(Intents.TITLE, "Share Link to Twitter");
-            values.put(Intents.DISPOSITION, "inline");
-            db.insert(Intents.TABLE_NAME, null, values);
-            
-            sql = "CREATE TABLE " + WebAndroidMap.TABLE_NAME + " (" +
-                    WebAndroidMap.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    WebAndroidMap.WEB_ACTION + " TEXT NOT NULL, " +
-                    WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL" +
-                    ");";
-            
-            db.execSQL(sql);
-            
-            values.clear();
-            values.put(WebAndroidMap.WEB_ACTION, "http://webintents.org/share");
-            values.put(WebAndroidMap.ANDROID_ACTION, "android.intent.action.SEND");
-            db.insert(WebAndroidMap.TABLE_NAME, null, values);
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            // TODO Auto-generated method stub
-            db.execSQL("DROP TABLE IF EXISTS " + Intents.TABLE_NAME);
-        }
-        
-    }
-    
-    private DatabaseOpenHelper dbOpenHelper;
+    private WebIntentsDatabaseInFile mWebIntentsDatabaseInFileOpenHelper;
+    private WebIntentsDatabaseInMemory mWebIntentsDatabaseInMemoryOpenHelper;
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
@@ -129,47 +86,70 @@ public class WebIntentsProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-        long rowID;
-        rowID = db.insert(Intents.TABLE_NAME, null, values);
-        if (rowID > 0) {
-            return ContentUris.withAppendedId(Intents.CONTENT_URI, rowID);
+        SQLiteDatabase db = null;
+        switch (URI_MATCHER.match(uri)) {
+        case INTENTS:
+            db = mWebIntentsDatabaseInFileOpenHelper.getWritableDatabase();
+            break;
+            
+        case INTENTS_INMEMORY:
+            db = mWebIntentsDatabaseInMemoryOpenHelper.getWritableDatabase();
+
+        default:
+            break;
         }
-        db.close();
+        if (db != null) {
+            long rowID;
+            rowID = db.insert(WebIntents.TABLE_NAME, null, values);
+            if (rowID > 0) {
+                return ContentUris.withAppendedId(WebIntents.CONTENT_URI, rowID);
+            }
+        }
+        
         throw new SQLException("Failed to insert row into " + uri);
     }
 
     @Override
     public boolean onCreate() {
-        dbOpenHelper = new DatabaseOpenHelper(getContext());
+        mWebIntentsDatabaseInFileOpenHelper = new WebIntentsDatabaseInFile(getContext());
+        mWebIntentsDatabaseInMemoryOpenHelper = new WebIntentsDatabaseInMemory(getContext());
         return true;
     }
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
+        SQLiteDatabase db = null;
+        
         switch (URI_MATCHER.match(uri)) {
         case INTENTS:
-            qb.setTables(Intents.TABLE_NAME);
+            db = mWebIntentsDatabaseInFileOpenHelper.getReadableDatabase();
+            qBuilder.setTables(WebIntents.TABLE_NAME);
             break;
             
         case INTENTS_ID:
-            qb.setTables(Intents.TABLE_NAME);
-            qb.appendWhere(Intents.ID + "=" + uri.getPathSegments().get(1));
+            db = mWebIntentsDatabaseInFileOpenHelper.getReadableDatabase();
+            qBuilder.setTables(WebIntents.TABLE_NAME);
+            qBuilder.appendWhere(WebIntents.ID + "=" + uri.getPathSegments().get(1));
+            break;
+            
+        case INTENTS_INMEMORY:
+            db = mWebIntentsDatabaseInMemoryOpenHelper.getReadableDatabase();
+            qBuilder.setTables(WebIntents.TABLE_NAME);
             break;
             
         case WEB_ANDRIOD_MAP:
-            qb.setTables(WebAndroidMap.TABLE_NAME);
+            db = mWebIntentsDatabaseInFileOpenHelper.getReadableDatabase();
+            qBuilder.setTables(WebAndroidMap.TABLE_NAME);
             break;
 
         default:
             break;
         }
-        
-        SQLiteDatabase db = dbOpenHelper.getReadableDatabase();
-        String qs = qb.buildQuery(projection, selection, null, null, sortOrder, null);
-        Cursor c = qb.query(db, projection, selection, selectionArgs, 
+         
+        String qs = qBuilder.buildQuery(projection, selection, null, null, sortOrder, null);
+        Cursor c = qBuilder.query(db, projection, selection, selectionArgs, 
                 null, null, sortOrder);
         return c;
     }

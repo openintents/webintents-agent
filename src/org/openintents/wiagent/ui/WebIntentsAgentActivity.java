@@ -12,33 +12,30 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.openintents.wiagent.CustomWebView;
 import org.openintents.wiagent.WebIntent;
 import org.openintents.wiagent.Intents;
 import org.openintents.wiagent.R;
 import org.openintents.wiagent.provider.WebIntentsProvider;
 import org.openintents.wiagent.ui.widget.AndroidAppListAdapter;
+import org.openintents.wiagent.ui.widget.CustomWebView;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.ContentObserver;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JsResult;
 import android.webkit.ValueCallback;
@@ -48,22 +45,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 
 public class WebIntentsAgentActivity extends Activity
         implements SearchView.OnQueryTextListener {
     
+    private String mMenuItemAppManagementTitle = null;
+    
     private CustomWebView mWebView;
     private SearchView mSearchView;
-    
-    private static final int DISMISSMESSAGE_WHAT_WEBINTENTS = 1;
-    private Message mOnDismissMessage;
     
     private ValueCallback<Uri> mUploadFile;
     private final static int FILECHOOSER_RESULTCODE = 1;
@@ -85,8 +77,9 @@ public class WebIntentsAgentActivity extends Activity
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view,
-                    String url) {
-                CustomWebView v = (CustomWebView) view;                
+                    String url) {                
+                CustomWebView v = (CustomWebView) view; 
+                if (v.getIframeUrls() == null) return super.shouldInterceptRequest(view, url);
                 if (v.getIframeUrls().contains(url)) {
                     HttpURLConnection urlConnection = null;
                     InputStream in = null;
@@ -123,18 +116,8 @@ public class WebIntentsAgentActivity extends Activity
                             }
                         }
                         
-                        String scriptToInject = 
-                                "var Intent = function(action, type, data) {" +
-                                    "this.action = action;" +
-                                    "this.type = type;" +
-                                    "this.data = data;" +
-                                "};" +
-                                "var Navigator = function() {};" +
-                                "Navigator.prototype.startActivity = function(intent) {" +
-                                    "navigatorAndroid.startActivity(intent.action, intent.type, intent.data);" +
-                                "};" +
-                                "window.navigator = new Navigator();";
-                        
+                        String scriptToInject = CustomWebView.sScriptToInject;
+                                                       
                         doc.head().prependElement("script")
                             .attr("type", "text/javascript")
                             .html(scriptToInject);
@@ -165,6 +148,7 @@ public class WebIntentsAgentActivity extends Activity
             }
             
         });
+        
         mWebView.setWebChromeClient(new WebChromeClient() {
             
             // File chooser of WebView, hidden by the document
@@ -185,25 +169,43 @@ public class WebIntentsAgentActivity extends Activity
             
         });
         
+        getContentResolver().registerContentObserver(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, true, 
+                new ContentObserver(mUIThreadHandler) {
+
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        QueryWebIntentsToAddTask task = new QueryWebIntentsToAddTask();
+                        task.execute();
+                    }
+                    
+                });
+        
         mWebView.addJavascriptInterface(new Navigator(this), "navigatorAndroid");
 //        mWebView.loadUrl("http://examples.webintents.org/intents/share/share.html");
 //        mWebView.loadUrl("javascritp:");
-        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
+//        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
+//        mWebView.loadUrl("file:///android_asset/www/service/webintents-debugger.html");
+        mWebView.loadUrl("file:///android_asset/www/index.html");
 //        mWebView.loadUrl("http://examples.webintents.org/intents/shorten/shorten.html");
 //        mWebView.loadUrl("https://twitter.com/intent/session");
 //        mWebView.loadUrl("https://m.facebook.com/"); 
 //        mWebView.loadUrl("http://ie.microsoft.com/testdrive/HTML5/DOMContentLoaded/Default.html");
     }
-    
+        
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Remove existing items in case of duplicates
+        menu.clear();
+        
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.action_bar, menu);
-        MenuItem searchItem = menu.findItem(R.id.menu_addr_bar);        
-        setupSearchView(searchItem);
+        inflater.inflate(R.menu.navigation, menu);
+        if (mMenuItemAppManagementTitle != null) {
+            MenuItem menuItem = menu.findItem(R.id.menu_app_management);
+            menuItem.setTitle(mMenuItemAppManagementTitle);
+        }
         return true;
     }
-        
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode,
             android.content.Intent data) {
@@ -244,41 +246,41 @@ public class WebIntentsAgentActivity extends Activity
             break;
             
         case R.id.menu_home:
-            mWebView.loadUrl("http://webintents.org/");
+            mWebView.loadUrl("file:///android_asset/www/index.html");
             break;
             
         case R.id.menu_refresh:
             mWebView.reload();
             break;
             
-        case R.id.menu_registered_apps:
-            Dialog d = new Dialog(this);
-            d.setTitle("Registered Applications");
-            String[] mProjection = {
-                WebIntentsProvider.Intents.ID,    
-                WebIntentsProvider.Intents.TITLE,
-                WebIntentsProvider.Intents.HREF
-            };
-            
-            Cursor mCursor = getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
-                    mProjection, null, null, null);
-            
-            ListView mAppList = new ListView(this);
-            
-            String[] mColumns = {
-                WebIntentsProvider.Intents.TITLE,
-                WebIntentsProvider.Intents.HREF
-            };
-            
-            int[] mViewIDs = {
-                android.R.id.text1,
-                android.R.id.text2
-            };
-            
-            mAppList.setAdapter(new SimpleCursorAdapter(this, 
-                    android.R.layout.simple_list_item_2, mCursor, mColumns, mViewIDs));
-            d.setContentView(mAppList);
-            d.show();
+        case R.id.menu_app_management:            
+//            Dialog d = new Dialog(this);
+//            d.setTitle("Registered Applications");
+//            String[] mProjection = {
+//                WebIntentsProvider.Intents.ID,    
+//                WebIntentsProvider.Intents.TITLE,
+//                WebIntentsProvider.Intents.HREF
+//            };
+//            
+//            Cursor mCursor = getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
+//                    mProjection, null, null, null);
+//            
+//            ListView mAppList = new ListView(this);
+//            
+//            String[] mColumns = {
+//                WebIntentsProvider.Intents.TITLE,
+//                WebIntentsProvider.Intents.HREF
+//            };
+//            
+//            int[] mViewIDs = {
+//                android.R.id.text1,
+//                android.R.id.text2
+//            };
+//            
+//            mAppList.setAdapter(new SimpleCursorAdapter(this, 
+//                    android.R.layout.simple_list_item_2, mCursor, mColumns, mViewIDs));
+//            d.setContentView(mAppList);
+//            d.show();
 
         default:
             break;
@@ -323,20 +325,20 @@ public class WebIntentsAgentActivity extends Activity
             ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);            
             
             String[] projectionWebIntents = {
-                    WebIntentsProvider.Intents.ID,    
-                    WebIntentsProvider.Intents.TITLE,
-                    WebIntentsProvider.Intents.HREF
+                    WebIntentsProvider.WebIntents.ID,    
+                    WebIntentsProvider.WebIntents.TITLE,
+                    WebIntentsProvider.WebIntents.HREF
             };
 
-            String selectionWebIntents = WebIntentsProvider.Intents.ACTION + " = ?";
+            String selectionWebIntents = WebIntentsProvider.WebIntents.ACTION + " = ?";
             String[] selectionArgsWebIntents = { webIntent.action };
 
-            Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
+            Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.WebIntents.CONTENT_URI, 
                     projectionWebIntents, selectionWebIntents, selectionArgsWebIntents, null);            
 
             String[] columnWebIntents = {
-                    WebIntentsProvider.Intents.TITLE,
-                    WebIntentsProvider.Intents.HREF
+                    WebIntentsProvider.WebIntents.TITLE,
+                    WebIntentsProvider.WebIntents.HREF
             };
 
             int[] mViewIDs = {
@@ -401,7 +403,8 @@ public class WebIntentsAgentActivity extends Activity
                 }
             }
             
-            androidAppListView.setAdapter(new AndroidAppListAdapter(mContext, R.layout.list_item_android_app, androidApps));
+            androidAppListView.setAdapter(new AndroidAppListAdapter(mContext, androidApps));
+            
             androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 
                 @Override
@@ -420,6 +423,35 @@ public class WebIntentsAgentActivity extends Activity
             
             d.show();
         }
+    }
+    
+    private class QueryWebIntentsToAddTask extends AsyncTask<Void, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(Void... params) {
+            ContentResolver rc = getContentResolver();
+            String[] projection = {
+                "sum(" + WebIntentsProvider.WebIntents.ID + ")"                                   
+            };
+            Cursor cursor = rc.query(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, projection, null, null, null);
+            if (cursor.moveToNext()) {
+                return cursor.getInt(0);
+                
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Integer result) {
+            if (result == 0) {
+                mMenuItemAppManagementTitle = null;
+            } else {
+                mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
+                        " (" + result + "New to add)";
+            }
+        }
+        
     }
 
 }

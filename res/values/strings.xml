@@ -3,6 +3,6 @@
 
     <string name="hello">Hello World, OIWebIntentsAgentActivity!</string>
     <string name="app_name">OI WebIntents Agent</string>
-    <string name="registered_apps">Registered applications</string>
+    <string name="app_management">Application management</string>    
 
 </resources>
