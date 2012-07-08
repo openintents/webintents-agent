@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>Web Intents Debugger</title>
+
+<link rel="icon" type="image/png" href="http://www.tomgibara.com/webintents/debug/favicon.png">
+<link rel="stylesheet" type="text/css" href="http://www.tomgibara.com/webintents/debug/styles.css">
+<link href='http://fonts.googleapis.com/css?family=Russo+One|Imprima'
+rel='stylesheet' type='http://www.tomgibara.com/webintents/debug/text/css'>
+<script src="http://webintents.org/webintents.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+<intent 
+  action="http://webintents.org/share" 
+  type="text/uri-list" 
+  href="file:///android_asset/www/service/webintents-debugger.html" 
+  title="Web Intents Debugger" />
+
+</head>
+
+<body>
+
+<h1>Web Intents Debugger</h1>
+
+<div id="intents">
+</div>
+
+<div id="intro">
+
+<h2>Introduction</h2>
+
+<p>This is a tool for developers who are interested in inspecting <a href="http://webintents.org">web intents</a>.</p>
+
+<p>When installed, this application registers itself for all common <em>verbs</em>. And if chosen to receive an intent, it logs the intent and exposes its fields.</p>
+
+<p>The aim is to make it easier to discover how other applications are populating their intents. As it stands, this application is somewhat limited because (a) there is no action wild-carding and (b) the chrome webstore does not support type wildcards either. As a consequence this application can only capture 'standard' verbs used with common mime types; it may be possible to improve this in the future.</p>
+
+</div>
+
+<div class="attrib">
+  <div class="author">by <a rel="author" href="http://www.tomgibara.com">Tom Gibara</a></div>
+</div>
+<script type="text/javascript">
+  function render(value) {
+    var html = $("<div class='intent'><div class='details'></div></div>");
+
+    var el = html.find(".details");
+    $("<div>").addClass("property").append("<span class='key'>Action</span>: ").append(value.action).appendTo(el);
+    $("<div>").addClass("property").append("<span class='key'>Type</span>: ").append($("<span>").addClass("value").append(value.type)).appendTo(el);
+    var data = value.data;
+    var dataSpan;
+    if (data == null) {
+      dataSpan = "<em>none</em>";
+    } else if (typeof(data) == "string") {
+      if (data.indexOf("http:") == 0 || data.indexOf("https:") == 0) {
+        dataSpan = $("<a>").attr("href", data).append(data);
+      } else if (data.indexOf("data:image/") == 0) {
+        dataSpan = $("<img>").attr("src", data);
+      } else {
+        dataSpan = $("<span>").addClass("value").append(data);
+      }
+    } else {
+      dataSpan = "<em>JS type " + typeof(data) + "</em>";
+    }
+    $("<div>").addClass("property").append("<span class='key'>Data</span>: ").append(dataSpan).appendTo(el);
+    
+    $("#intents").append(html);
+  }
+</script>
+<script type="text/javascript">
+var intent = window.intent || window.webkitIntent;
+if (intent) render(window.intent);
+</script>
+
+
+</body>
+</html>
