@@ -5,13 +5,16 @@
     android:orientation="horizontal" >
 
     <fragment
-        android:name="org.openintents.wiagent.ui.WebIntentsToAddListFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:id="@+id/webapp_with_intents_toadd"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        class="org.openintents.wiagent.ui.WebAppWithIntentsToAddFragment" />
 
-    <fragment
-        android:name="org.openintents.wiagent.ui.ShowWebIntentDetailFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <FrameLayout
+        android:id="@+id/webintents_by_app"
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="2" />
 
 </LinearLayout>

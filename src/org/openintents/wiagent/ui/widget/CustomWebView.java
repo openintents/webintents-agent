@@ -321,6 +321,7 @@ public class CustomWebView extends WebView {
 
         @Override
         protected Void doInBackground(Elements... params) { 
+            boolean isInsert = false;
             ContentResolver cr = mContext.getContentResolver();
             for (int i = 0; i < params.length; i++) {
                 Elements webintents = params[i];
@@ -337,7 +338,7 @@ public class CustomWebView extends WebView {
                             webintent.attr("href")
                     }; 
                     Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, projection, selection, selectionArgs, null);
-                    if (!cursor.moveToFirst()) {
+                    if (!cursor.moveToFirst()) {                        
                         cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
                         if (!cursor.moveToFirst()) {
                             ContentValues values = new ContentValues();
@@ -347,11 +348,14 @@ public class CustomWebView extends WebView {
                             values.put(WebIntents.TITLE, webintent.attr("title"));
                             values.put(WebIntents.DISPOSITION, webintent.attr("disposition"));
                             cr.insert(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, values);
-                            cr.notifyChange(WebIntents.CONTENT_URI_INMEMORY, null);
+                            isInsert = true;                            
                         }
                     }                    
                 }
-            }            
+            }  
+            if (isInsert == true) {
+                cr.notifyChange(WebIntents.CONTENT_URI_INMEMORY, null);
+            }
             return null;
         }
         

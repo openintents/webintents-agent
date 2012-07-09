@@ -203,6 +203,7 @@ public class WebIntentsAgentActivity extends Activity
             MenuItem menuItem = menu.findItem(R.id.menu_app_management);
             menuItem.setTitle(mMenuItemAppManagementTitle);
         }
+        
         return true;
     }
 
@@ -231,7 +232,6 @@ public class WebIntentsAgentActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // TODO Auto-generated method stub
         switch (item.getItemId()) {
         case R.id.menu_backward:
             if (mWebView.canGoBack()) {
@@ -253,7 +253,14 @@ public class WebIntentsAgentActivity extends Activity
             mWebView.reload();
             break;
             
-        case R.id.menu_app_management:            
+        case R.id.menu_app_management:
+            Context appContext = getApplicationContext();
+            Intent intent = new Intent(appContext, WebAppManagementActivity.class);
+            startActivity(intent);
+            break;
+        
+            
+            
 //            Dialog d = new Dialog(this);
 //            d.setTitle("Registered Applications");
 //            String[] mProjection = {
@@ -431,15 +438,10 @@ public class WebIntentsAgentActivity extends Activity
         protected Integer doInBackground(Void... params) {
             ContentResolver rc = getContentResolver();
             String[] projection = {
-                "sum(" + WebIntentsProvider.WebIntents.ID + ")"                                   
+                WebIntentsProvider.WebIntents.ID
             };
             Cursor cursor = rc.query(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, projection, null, null, null);
-            if (cursor.moveToNext()) {
-                return cursor.getInt(0);
-                
-            } else {
-                return 0;
-            }
+            return cursor.getCount();
         }
 
         @Override
@@ -448,7 +450,7 @@ public class WebIntentsAgentActivity extends Activity
                 mMenuItemAppManagementTitle = null;
             } else {
                 mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
-                        " (" + result + "New to add)";
+                        " (" + result + " New to add)";
             }
         }
         
