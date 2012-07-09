@@ -3,4 +3,4 @@ webintents-agent
 
 OI WebIntents Agent
 
-Please uninstall the former version
+Please uninstall the former version before update
