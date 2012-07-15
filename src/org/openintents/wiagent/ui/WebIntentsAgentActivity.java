@@ -169,16 +169,77 @@ public class WebIntentsAgentActivity extends Activity
             
         });
         
-        getContentResolver().registerContentObserver(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, true, 
+        getContentResolver().registerContentObserver(WebIntentsProvider.WebIntents.CONTENT_URI, true, 
                 new ContentObserver(mUIThreadHandler) {
 
                     @Override
                     public void onChange(boolean selfChange) {
-                        QueryWebIntentsToAddTask task = new QueryWebIntentsToAddTask();
-                        task.execute();
+                        AsyncTask<Void, Void, Integer> webAppDiscoveredQueryTask = new AsyncTask<Void, Void, Integer>() {
+
+                            @Override
+                            protected Integer doInBackground(Void... params) {
+                                ContentResolver rc = getContentResolver();
+                                
+                                String[] projection = {
+                                    "DISTINCT " + WebIntentsProvider.WebIntents.HREF
+                                };
+                                String selection = WebIntentsProvider.WebIntents.BOOKMARKED + "='0'";
+                                
+                                Cursor cursor = rc.query(WebIntentsProvider.WebIntents.CONTENT_URI, 
+                                        projection, selection, null, null);
+                                return cursor.getCount();
+                            }
+
+                            @Override
+                            protected void onPostExecute(Integer result) {
+                                if (result == 1) {
+                                    mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
+                                            " (" + result + " New App)";
+                                } else if (result > 1) {
+                                    mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
+                                            " (" + result + " New Apps)";
+                                } else {
+                                    mMenuItemAppManagementTitle = null;
+                                }
+                            }
+                        };
+                        
+                        webAppDiscoveredQueryTask.execute();
                     }
                     
                 });
+        
+        AsyncTask<Void, Void, Integer> webAppDiscoveredQueryTask = new AsyncTask<Void, Void, Integer>() {
+
+            @Override
+            protected Integer doInBackground(Void... params) {
+                ContentResolver rc = getContentResolver();
+                
+                String[] projection = {
+                    "DISTINCT " + WebIntentsProvider.WebIntents.HREF
+                };
+                String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0'";
+                
+                Cursor cursor = rc.query(WebIntentsProvider.WebIntents.CONTENT_URI, 
+                        projection, selection, null, null);
+                return cursor.getCount();
+            }
+
+            @Override
+            protected void onPostExecute(Integer result) {
+                if (result == 1) {
+                    mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
+                            " (" + result + " New App)";
+                } else if (result > 1) {
+                    mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
+                            " (" + result + " New Apps)";
+                } else {
+                    mMenuItemAppManagementTitle = null;
+                }
+            }
+        };
+        
+        webAppDiscoveredQueryTask.execute();
         
         mWebView.addJavascriptInterface(new Navigator(this), "navigatorAndroid");
 //        mWebView.loadUrl("http://examples.webintents.org/intents/share/share.html");
@@ -198,7 +259,7 @@ public class WebIntentsAgentActivity extends Activity
         menu.clear();
         
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.navigation, menu);
+        inflater.inflate(R.menu.nav_main, menu);
         if (mMenuItemAppManagementTitle != null) {
             MenuItem menuItem = menu.findItem(R.id.menu_app_management);
             menuItem.setTitle(mMenuItemAppManagementTitle);
@@ -258,36 +319,6 @@ public class WebIntentsAgentActivity extends Activity
             Intent intent = new Intent(appContext, WebAppManagementActivity.class);
             startActivity(intent);
             break;
-        
-            
-            
-//            Dialog d = new Dialog(this);
-//            d.setTitle("Registered Applications");
-//            String[] mProjection = {
-//                WebIntentsProvider.Intents.ID,    
-//                WebIntentsProvider.Intents.TITLE,
-//                WebIntentsProvider.Intents.HREF
-//            };
-//            
-//            Cursor mCursor = getContentResolver().query(WebIntentsProvider.Intents.CONTENT_URI, 
-//                    mProjection, null, null, null);
-//            
-//            ListView mAppList = new ListView(this);
-//            
-//            String[] mColumns = {
-//                WebIntentsProvider.Intents.TITLE,
-//                WebIntentsProvider.Intents.HREF
-//            };
-//            
-//            int[] mViewIDs = {
-//                android.R.id.text1,
-//                android.R.id.text2
-//            };
-//            
-//            mAppList.setAdapter(new SimpleCursorAdapter(this, 
-//                    android.R.layout.simple_list_item_2, mCursor, mColumns, mViewIDs));
-//            d.setContentView(mAppList);
-//            d.show();
 
         default:
             break;
@@ -337,7 +368,8 @@ public class WebIntentsAgentActivity extends Activity
                     WebIntentsProvider.WebIntents.HREF
             };
 
-            String selectionWebIntents = WebIntentsProvider.WebIntents.ACTION + " = ?";
+            String selectionWebIntents = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
+                    WebIntentsProvider.WebIntents.BOOKMARKED + " = '1'";
             String[] selectionArgsWebIntents = { webIntent.action };
 
             Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.WebIntents.CONTENT_URI, 
@@ -425,35 +457,19 @@ public class WebIntentsAgentActivity extends Activity
                     intent.putExtra(Intent.EXTRA_TEXT, webIntent.data);
                     mContext.startActivity(intent);
                 }
+            });
+            
+            androidAppListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
+                @Override
+                public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                        int arg2, long arg3) {
+                    // TODO Auto-generated method stub
+                    return false;
+                }
             });
             
             d.show();
         }
     }
-    
-    private class QueryWebIntentsToAddTask extends AsyncTask<Void, Void, Integer> {
-
-        @Override
-        protected Integer doInBackground(Void... params) {
-            ContentResolver rc = getContentResolver();
-            String[] projection = {
-                WebIntentsProvider.WebIntents.ID
-            };
-            Cursor cursor = rc.query(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, projection, null, null, null);
-            return cursor.getCount();
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            if (result == 0) {
-                mMenuItemAppManagementTitle = null;
-            } else {
-                mMenuItemAppManagementTitle = getResources().getString(R.string.app_management) + 
-                        " (" + result + " New to add)";
-            }
-        }
-        
-    }
-
 }

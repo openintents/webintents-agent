@@ -4,15 +4,14 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <fragment
-        android:id="@+id/webapp_with_intents_toadd"
+    <FrameLayout
+        android:id="@+id/main_container"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        class="org.openintents.wiagent.ui.WebAppWithIntentsToAddFragment" />
+        android:layout_weight="1" />
 
     <FrameLayout
-        android:id="@+id/webintents_by_app"
+        android:id="@+id/subcontainer"
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="2" />

@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script>      
-      var intent = window.intent || window.webkitIntent;
-      if (intent) {
-        if(intent.type === "text/uri-list") {
-          var href = "https://twitter.com/intent/tweet?url=" +
-              encodeURI(intent.data);
-          window.location = href;
-        }
-        else if(intent.type === "text/plain") {
-          var href = "https://twitter.com/intent/tweet?text=" +
-              encodeURIComponent(intent.data);
-          window.location = href;
-        }
-      }
-    </script>
-  </head>
+<head>
+<intent action="http://webintents.org/share" type="text/uri-list"
+	title="Share Link to Twitter"
+	href="file:///android_asset/www/service/twitter_text_share.html" />
+<script>
+	var intent = window.intent || window.webkitIntent;
+	if (intent) {
+		if (intent.type === "text/uri-list") {
+			var href = "https://twitter.com/intent/tweet?url="
+					+ encodeURI(intent.data);
+			window.location = href;
+		} else if (intent.type === "text/plain") {
+			var href = "https://twitter.com/intent/tweet?text="
+					+ encodeURIComponent(intent.data);
+			window.location = href;
+		}
+	}
+</script>
+</head>
+<body>This is a registration page for the service "Share Link to Twitter"!
+</body>
 </html>

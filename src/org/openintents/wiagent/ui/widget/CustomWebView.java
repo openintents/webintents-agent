@@ -248,8 +248,57 @@ public class CustomWebView extends WebView {
                 Elements webintents = doc.select("intent");
                 
                 if (webintents != null && webintents.size() != 0) {
-                    WebIntentsRegistrationTask task = new WebIntentsRegistrationTask();
-                    task.execute(webintents);
+                    AsyncTask<Elements, Void, Void> registerTask = new AsyncTask<Elements, Void, Void>() {
+
+                        @Override
+                        protected Void doInBackground(Elements... params) {
+                            boolean isInsert = false;
+                            
+                            ContentResolver cr = mContext.getContentResolver();
+                            
+                            for (int i = 0; i < params.length; i++) {
+                                Elements webintents = params[i];
+                                
+                                for (Element webintent : webintents) {
+                                    String[] projection = {
+                                        WebIntentsProvider.WebIntents.ID                         
+                                    };
+                                    String selection = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
+                                            WebIntentsProvider.WebIntents.TYPE + " = ? and " +
+                                            WebIntentsProvider.WebIntents.HREF + " = ?";
+                                    String[] selectionArgs = {
+                                            webintent.attr("action"),
+                                            webintent.attr("type"),
+                                            webintent.attr("href")
+                                    }; 
+                                    
+                                    Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
+                                    
+                                    if (!cursor.moveToFirst()) {                        
+                                        cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
+                                        if (!cursor.moveToFirst()) {
+                                            ContentValues values = new ContentValues();
+                                            values.put(WebIntents.ACTION, webintent.attr("action"));
+                                            values.put(WebIntents.TYPE, webintent.attr("type"));
+                                            values.put(WebIntents.HREF, webintent.attr("href"));
+                                            values.put(WebIntents.TITLE, webintent.attr("title"));
+                                            values.put(WebIntents.DISPOSITION, webintent.attr("disposition"));
+                                            cr.insert(WebIntentsProvider.WebIntents.CONTENT_URI, values);
+                                            isInsert = true;                            
+                                        }
+                                    }                    
+                                }
+                            } 
+                            
+                            if (isInsert == true) {
+                                cr.notifyChange(WebIntents.CONTENT_URI, null);
+                            }
+                            
+                            return null;
+                        }
+                    };
+                    
+                    registerTask.execute(webintents);
                 }
                 
                 // Remove shim files
@@ -316,49 +365,4 @@ public class CustomWebView extends WebView {
     public void setContext(Context mContext) {
         this.mContext = mContext;
     }
-    
-    private class WebIntentsRegistrationTask extends AsyncTask<Elements, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Elements... params) { 
-            boolean isInsert = false;
-            ContentResolver cr = mContext.getContentResolver();
-            for (int i = 0; i < params.length; i++) {
-                Elements webintents = params[i];
-                for (Element webintent : webintents) {
-                    String[] projection = {
-                        WebIntentsProvider.WebIntents.ID                         
-                    };
-                    String selection = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
-                    		WebIntentsProvider.WebIntents.TYPE + " = ? and " +
-                    		WebIntentsProvider.WebIntents.HREF + " = ?";
-                    String[] selectionArgs = {
-                            webintent.attr("action"),
-                            webintent.attr("type"),
-                            webintent.attr("href")
-                    }; 
-                    Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, projection, selection, selectionArgs, null);
-                    if (!cursor.moveToFirst()) {                        
-                        cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
-                        if (!cursor.moveToFirst()) {
-                            ContentValues values = new ContentValues();
-                            values.put(WebIntents.ACTION, webintent.attr("action"));
-                            values.put(WebIntents.TYPE, webintent.attr("type"));
-                            values.put(WebIntents.HREF, webintent.attr("href"));
-                            values.put(WebIntents.TITLE, webintent.attr("title"));
-                            values.put(WebIntents.DISPOSITION, webintent.attr("disposition"));
-                            cr.insert(WebIntentsProvider.WebIntents.CONTENT_URI_INMEMORY, values);
-                            isInsert = true;                            
-                        }
-                    }                    
-                }
-            }  
-            if (isInsert == true) {
-                cr.notifyChange(WebIntents.CONTENT_URI_INMEMORY, null);
-            }
-            return null;
-        }
-        
-    }
-
 }
