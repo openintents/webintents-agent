@@ -7,7 +7,6 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,7 +33,6 @@ public class WebAppManagementActivity extends Activity {
                 String[] projection = {
                         WebIntentsProvider.WebIntents.ID
                 };
-//                String selection = null;
                 String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0'";
                 
                 Cursor cursor = getContentResolver().query(

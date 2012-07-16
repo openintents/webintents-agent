@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,6 +16,7 @@ import org.jsoup.select.Elements;
 import org.openintents.wiagent.WebIntent;
 import org.openintents.wiagent.provider.WebIntentsProvider;
 import org.openintents.wiagent.provider.WebIntentsProvider.WebIntents;
+import org.openintents.wiagent.util.HistoryStackEntry;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -49,6 +51,9 @@ public class CustomWebView extends WebView {
     private List<String> mIframeUrls;
     
     private Context mContext;
+    
+    private Stack<HistoryStackEntry> mForwardHistory = new Stack<HistoryStackEntry>();
+    private Stack<HistoryStackEntry> mBackHistory = new Stack<HistoryStackEntry>();
    
     // Instances of CustomWebView mush be created by UIThread so that this
     // handler can be attached to it.
@@ -71,7 +76,6 @@ public class CustomWebView extends WebView {
                 String baseUrl = "file:///android_asset/www/service/";
                 String data = obj.mHtml;
                 CustomWebView.this.mIframeUrls = obj.mIframeUrls;
-//                CustomWebView.this.loadData(data, "text/html", "utf8");
                 CustomWebView.this.loadDataWithBaseURL(baseUrl, data, "text/html", "utf8", null);
                 break;
             }
@@ -84,20 +88,58 @@ public class CustomWebView extends WebView {
     };
 
     public CustomWebView(Context context) {
-        super(context);        
+        super(context);
     }
 
+    // Constructor for attributes in the AndroidManifest.xml
     public CustomWebView(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+    
+    @Override
+    public boolean canGoBack() {
+        if (mBackHistory.size() > 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean canGoForward() {
+        if (!mForwardHistory.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void goBack() {
+        // Pop the current url
+        mBackHistory.pop();
+        
+        HistoryStackEntry back = mBackHistory.pop();
+        mForwardHistory.push(new HistoryStackEntry(mCurrentUrl, mWebIntent));
+        loadUrl(back.historyUrl, back.historyWebIntent);
+    }
+
+    @Override
+    public void goForward() {
+        HistoryStackEntry forward = mForwardHistory.pop();
+        mForwardHistory.push(new HistoryStackEntry(mCurrentUrl, mWebIntent));
+        loadUrl(forward.historyUrl, forward.historyWebIntent);
     }
 
     @Override
     public void loadUrl(String url) { 
-        WebIntent weIntent = null;
-        loadUrl(url, weIntent);
+        WebIntent webIntent = null;
+        loadUrl(url, webIntent);
     }
     
     public void loadUrl(String url, WebIntent webIntent) {
+        mBackHistory.push(new HistoryStackEntry(url, webIntent));
+        
         mCurrentUrl = url;
         mWebIntent = webIntent;
         if (url.indexOf("http") == 0 || url.indexOf("https") == 0) {
