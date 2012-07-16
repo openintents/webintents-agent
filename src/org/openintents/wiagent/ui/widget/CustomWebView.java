@@ -1,23 +1,17 @@
 package org.openintents.wiagent.ui.widget;
 
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
-import org.openintents.wiagent.HTMLIntentElement;
 import org.openintents.wiagent.WebIntent;
 import org.openintents.wiagent.provider.WebIntentsProvider;
 import org.openintents.wiagent.provider.WebIntentsProvider.WebIntents;
@@ -27,7 +21,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.Cursor;
-import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;

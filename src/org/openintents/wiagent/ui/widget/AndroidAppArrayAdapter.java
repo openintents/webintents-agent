@@ -14,7 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class AndroidAppListAdapter extends ArrayAdapter<ResolveInfo> {
+public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
     
     private Context mContext;
     private LayoutInflater mInflater;
@@ -22,7 +22,7 @@ public class AndroidAppListAdapter extends ArrayAdapter<ResolveInfo> {
     
     private List<ResolveInfo> mObjects;
 
-    public AndroidAppListAdapter(Context context, List<ResolveInfo> objects) {
+    public AndroidAppArrayAdapter(Context context, List<ResolveInfo> objects) {
         super(context, R.layout.list_item_android_app, objects);
         mContext = context;
         mObjects = objects;       
@@ -60,5 +60,4 @@ public class AndroidAppListAdapter extends ArrayAdapter<ResolveInfo> {
         ImageView icon;
         
     }
-
 }

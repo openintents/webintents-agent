@@ -3,7 +3,9 @@ package org.openintents.wiagent.ui;
 import java.util.ArrayList;
 
 import org.openintents.wiagent.R;
+import org.openintents.wiagent.WebApp;
 import org.openintents.wiagent.provider.WebIntentsProvider;
+import org.openintents.wiagent.ui.widget.WebAppArrayAdapter;
 
 import android.app.FragmentTransaction;
 import android.app.ListFragment;
@@ -43,14 +45,16 @@ public class WebAppListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        AsyncTask<Void, Void, Cursor> appQueryTask = new AsyncTask<Void, Void, Cursor>() {
+        AsyncTask<Void, Void, ArrayList<WebApp>> appQueryTask = new AsyncTask<Void, Void, ArrayList<WebApp>>() {
 
             @Override
-            protected Cursor doInBackground(Void... params) {
+            protected ArrayList<WebApp> doInBackground(Void... params) {
+                
                 String[] projection = {
-                    "DISTINCT " + WebIntentsProvider.WebIntents.TITLE,
-                    WebIntentsProvider.WebIntents.HREF + " as _id"
+                        "DISTINCT " + WebIntentsProvider.WebIntents.TITLE,
+                        WebIntentsProvider.WebIntents.HREF
                 };
+
                 String selection;
                 
                 boolean bookmarked = getArguments().getBoolean(ARG_TAG_BOOKMARKED);
@@ -64,23 +68,21 @@ public class WebAppListFragment extends ListFragment {
                         WebIntentsProvider.WebIntents.CONTENT_URI, 
                         projection, selection, null, null);
                 
-                return cursor;
+                // Fix a bug when CursorAdapter has _id of non integer type, use ArrayList instead
+                ArrayList<WebApp> webAppList = new ArrayList<WebApp>();
+                while (cursor.moveToNext()) {
+                    webAppList.add(new WebApp(
+                            cursor.getString(cursor.getColumnIndex(WebIntentsProvider.WebIntents.TITLE)),
+                            cursor.getString(cursor.getColumnIndex(WebIntentsProvider.WebIntents.HREF))));
+                }
+                
+                return webAppList;
             }
 
             @Override
-            protected void onPostExecute(Cursor cursor) {
-                String[] from = {
-                        WebIntentsProvider.WebIntents.TITLE,
-                        "_id"
-                };
-                int[] to = {
-                        android.R.id.text1,
-                        android.R.id.text2
-                };
+            protected void onPostExecute(ArrayList<WebApp> webAppList) {
                 
-                setListAdapter(new SimpleCursorAdapter(getActivity(), 
-                        android.R.layout.simple_list_item_2, cursor, 
-                        from, to, 0));
+                setListAdapter(new WebAppArrayAdapter(getActivity(), webAppList));
                 
                 ListView listView = getListView();
                 
@@ -93,7 +95,6 @@ public class WebAppListFragment extends ListFragment {
                     
                     @Override
                     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                        // TODO Auto-generated method stub
                         return false;
                     }
                     
@@ -125,14 +126,12 @@ public class WebAppListFragment extends ListFragment {
                     @Override
                     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                         SparseBooleanArray checkedItems = getListView().getCheckedItemPositions();
-                        
-                        Cursor cursor = ((SimpleCursorAdapter) getListAdapter()).getCursor();
-                        
+
                         ArrayList<String> checkedApps = new ArrayList<String>();
-                        for (int i = 0; i < cursor.getCount(); i++) {
+                        for (int i = 0; i < getListAdapter().getCount(); i++) {
                             if (checkedItems.valueAt(i)) {
-                                cursor.moveToPosition(i);
-                                checkedApps.add(cursor.getString(cursor.getColumnIndex("_id")));
+                                WebApp webApp = (WebApp) getListAdapter().getItem(i);
+                                checkedApps.add(webApp.href);
                             }
                         }
                         
@@ -158,7 +157,7 @@ public class WebAppListFragment extends ListFragment {
                                 cr.notifyChange(WebIntentsProvider.WebIntents.CONTENT_URI, null);
                             }
 
-                            if (checkedApps.size() == cursor.getCount()) {
+                            if (checkedApps.size() == getListAdapter().getCount()) {
                                 // If no app left, clear the tab in CAB
                                 getActivity().getActionBar().removeTabAt(0);
                             } else {
@@ -310,12 +309,10 @@ public class WebAppListFragment extends ListFragment {
     public void onListItemClick(ListView l, View v, int position, long id) {
         boolean bookmarked = getArguments().getBoolean(ARG_TAG_BOOKMARKED);
         
-        Cursor cursor = ((SimpleCursorAdapter) l.getAdapter()).getCursor();
-        cursor.moveToPosition(position);
-        String href = cursor.getString(cursor.getColumnIndex("_id"));
+        WebApp webApp = (WebApp) getListAdapter().getItem(position);
         
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-        mWebIntentsByAppListFragment = WebIntentsByAppListFragment.newInstance(bookmarked, href);
+        mWebIntentsByAppListFragment = WebIntentsByAppListFragment.newInstance(bookmarked, webApp.href);
         ft.replace(R.id.subcontainer, mWebIntentsByAppListFragment);
         ft.commit();
     }

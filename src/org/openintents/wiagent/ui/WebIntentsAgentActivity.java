@@ -16,7 +16,7 @@ import org.openintents.wiagent.WebIntent;
 import org.openintents.wiagent.Intents;
 import org.openintents.wiagent.R;
 import org.openintents.wiagent.provider.WebIntentsProvider;
-import org.openintents.wiagent.ui.widget.AndroidAppListAdapter;
+import org.openintents.wiagent.ui.widget.AndroidAppArrayAdapter;
 import org.openintents.wiagent.ui.widget.CustomWebView;
 
 import android.app.Activity;
@@ -442,7 +442,7 @@ public class WebIntentsAgentActivity extends Activity
                 }
             }
             
-            androidAppListView.setAdapter(new AndroidAppListAdapter(mContext, androidApps));
+            androidAppListView.setAdapter(new AndroidAppArrayAdapter(mContext, androidApps));
             
             androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 
@@ -450,7 +450,7 @@ public class WebIntentsAgentActivity extends Activity
                 public void onItemClick(AdapterView<?> parent, View view, int position,
                         long id) {  
                     d.dismiss();
-                    Adapter adapter = (AndroidAppListAdapter) parent.getAdapter();
+                    Adapter adapter = (AndroidAppArrayAdapter) parent.getAdapter();
                     ResolveInfo ri = (ResolveInfo) adapter.getItem(position);
                     Intent intent = new Intent();
                     intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);

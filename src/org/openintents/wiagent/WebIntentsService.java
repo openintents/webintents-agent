@@ -6,7 +6,7 @@ import java.util.List;
 import org.openintents.wiagent.provider.WebIntentsProvider;
 import org.openintents.wiagent.ui.WebIntentsAgentActivity;
 
-import org.openintents.wiagent.ui.widget.AndroidAppListAdapter;
+import org.openintents.wiagent.ui.widget.AndroidAppArrayAdapter;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

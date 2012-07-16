@@ -86,7 +86,6 @@ public class WebIntentsByAppListFragment extends ListFragment {
                 
                 setListAdapter(new SimpleCursorAdapter(getActivity(), 
                         android.R.layout.simple_list_item_2, result, from, to, 0));
-                getListView().setBackgroundColor(android.R.color.holo_blue_bright);
                 
                 ListView listView = getListView();
                 
