@@ -40,19 +40,20 @@ public class CustomWebView extends WebView {
     static final int HANDLER_WHAT_FILEREADERTHREAD = 2;
     
     public static final String sScriptToInject =
-            "var Intent = function(action, type, data) {" +
-                "this.action = action;" +
-                "this.type = type;" +
-                "this.data = data;" +
-            "};" +
-            "window.navigator.startActivity = function(intent, onSuccess) {" +
+            "var Intent = function(action, type, data) {\n" +                
+                "this.action = action;\n" +
+                "this.type = type;\n" +
+                "this.data = data;\n" +
+            "};\n" +
+            "window.navigator.startActivity = function(intent, onSuccess) {\n" +
+                "if (!onSuccess) { onSuccess = null } else { onSuccess = onSuccess.toString() };" +
                 "navigatorAndroid.startActivity(" +
                     "intent.action, " +
                     "intent.type, " +
                     "intent.data, " +
-                    "onSuccess.toString()" +
-                ");" +
-            "};";
+                    "onSuccess" +
+                ");\n" +
+            "};\n";
     
     private boolean mHasResult;
     
@@ -213,14 +214,15 @@ public class CustomWebView extends WebView {
                 
                 if (mWebIntent != null) {
                     scriptToPrepend += 
-                            "var intent = new Intent();" +
-                                "intent.action = '" + (mWebIntent.action == null ? "null" : mWebIntent.action) + "';" +
-                                "intent.type = '" + (mWebIntent.type == null ? "null" : mWebIntent.type) + "';" +
-                                "intent.data = '" + (mWebIntent.data == null ? "null" : mWebIntent.data) + "';" +
-                                "intent.postResult = function(data) {" +
-                                    "navigatorAndroid.goBack(data);" +
-                                "};" +
-                            "window.intent = intent;";
+                        "var intent = new Intent();" +
+                                "intent.action = " + (mWebIntent.action == null ? "null" : "'" + mWebIntent.action + "'") + ";\n" +
+                                "intent.type = " + (mWebIntent.type == null ? "null" : "'" + mWebIntent.type + "'") + ";\n" +
+                                "intent.data = " + (mWebIntent.data == null ? "null" : "'" + mWebIntent.data + "'") + ";\n" +
+                                "intent.postResult = function(data) {\n" +
+                                    "var onSuccess = " + (mWebIntent.onSuccess == null ? "null" : "'" + mWebIntent.onSuccess.replace('\n', ' ') + "'") + ";\n" +
+                                    "navigatorAndroid.goBack(data, onSuccess);\n" +
+                                "};\n" +
+                        "window.intent = intent;\n";
                 }
                 
                 DataNode dataNode = new DataNode(scriptToPrepend, "");                
@@ -356,15 +358,15 @@ public class CustomWebView extends WebView {
                 
                 if (mWebIntent != null) {
                     scriptToPrepend +=
-                            "var intent = new Intent();" +
-                                "intent.action = '" + (mWebIntent.action == null ? "null" : mWebIntent.action) + "';\n" +
-                                "intent.type = '" + (mWebIntent.type == null ? "null" : mWebIntent.type) + "';\n" +
-                                "intent.data = '" + (mWebIntent.data == null ? "null" : mWebIntent.data) + "';\n" +
-                                "intent.postResult = function(data) {\n" +
-                                    "var onSuccess = '" + mWebIntent.onSuccess.replace('\n', ' ') + "';\n" +
-                                    "navigatorAndroid.goBack(data, onSuccess);\n" +
-                                "};\n" +
-                            "window.intent = intent;\n";
+                        "var intent = new Intent();" +
+                            "intent.action = " + (mWebIntent.action == null ? "null" : "'" + mWebIntent.action + "'") + ";\n" +
+                            "intent.type = " + (mWebIntent.type == null ? "null" : "'" + mWebIntent.type + "'") + ";\n" +
+                            "intent.data = " + (mWebIntent.data == null ? "null" : "'" + mWebIntent.data + "'") + ";\n" +
+                            "intent.postResult = function(data) {\n" +
+                                "var onSuccess = " + (mWebIntent.onSuccess == null ? "null" : "'" + mWebIntent.onSuccess.replace('\n', ' ') + "'") + ";\n" +
+                                "navigatorAndroid.goBack(data, onSuccess);\n" +
+                            "};\n" +
+                        "window.intent = intent;\n";
                 }
                 
                 // Use DataNode to avoid change " to &quot; by JSoup automatically
