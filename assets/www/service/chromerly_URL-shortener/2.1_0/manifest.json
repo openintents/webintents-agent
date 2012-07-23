@@ -1,0 +1,37 @@
+{
+   "background": {
+      "page": "background.html"
+   },
+   "default_locale": "en",
+   "description": "__MSG_ExtensionDesc__",
+   "homepage_url": "http://github.com/tuhoojabotti/Chromerly-URL-shortener",
+   "icons": {
+      "128": "graphics/128.png",
+      "16": "graphics/16.png",
+      "48": "graphics/48.png"
+   },
+   "intents": {
+      "http://webintents.org/shorten": {
+         "disposition": "inline",
+         "href": "intent/intent.html",
+         "title": "Shorten with Chromerly",
+         "type": [ "text/uri-list" ]
+      }
+   },
+   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDRUbX+dUYhMW3kELal/wmQQxtDWVL/fUEm6k5gGqauynxHmqJhs1uO+0KrO8fRZc9DjivTTTxQuptL/3Ea9f0Fx2Mw+rKx8Tz5kPQx4WOgK5PLGuslKo/vmlAmz5MiRRkTFdwOx7oDsR/hsSAvVXtbBY9BQcX/EnnOa2kuTTIDWwIDAQAB",
+   "manifest_version": 2,
+   "minimum_chrome_version": "19",
+   "name": "__MSG_ExtensionName__",
+   "omnibox": {
+      "keyword": "urly"
+   },
+   "optional_permissions": [ "webRequest", "webRequestBlocking" ],
+   "options_page": "options/options.html",
+   "page_action": {
+      "default_icon": "graphics/16.png",
+      "default_title": "__MSG_UrlyShorten__"
+   },
+   "permissions": [ "\u003Call_urls\u003E", "tabs", "notifications", "contextMenus", "clipboardWrite" ],
+   "update_url": "http://clients2.google.com/service/update2/crx",
+   "version": "2.1"
+}

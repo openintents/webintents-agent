@@ -1,0 +1,62 @@
+/*  Chromerly is a Chrome Extension to utilize the Finnish urly.fi.
+    Copyright (C) 2011-2012  Ville 'tuhoojabotti' Lahdenvuo
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>. */
+
+@import url(http://fonts.googleapis.com/css?family=Oswald:300,400);
+
+body {
+  font-family: 'Oswald', sans-serif;
+  margin: 10px 0 2px 2px;
+  background-color: #F0F0F0;
+  -webkit-user-select: none;
+  font-size: 20px;
+}
+
+#qr { float: left; }
+
+#info {
+  height: 108px;
+  display: -webkit-box;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+  background-color: #FFF;
+  border-bottom-right-radius: 1em;
+}
+
+#original {
+  font-weight: 300;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  border-bottom: 1px solid #BBB;
+  padding-left: 3px;
+  color: #444;
+  -webkit-user-select: text;
+}
+
+#link:active, #link:visited { color: blue; }
+#link {
+  -webkit-user-select: text;
+  text-decoration: none;
+}
+
+#link:hover #code { -webkit-transform: skew(-10deg); }
+#code {
+  -webkit-transition: -webkit-transform 0.2s ease;
+  display: inline-block;
+  font-size: 30px;
+  font-weight: bold;
+}

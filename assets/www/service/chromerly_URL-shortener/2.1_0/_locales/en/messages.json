@@ -1,0 +1,132 @@
+{
+   "ContextAudio": {
+      "description": "Context text: html5 audio",
+      "message": "Shorten audio url"
+   },
+   "ContextImage": {
+      "description": "Context text: image",
+      "message": "Shorten image url"
+   },
+   "ContextLink": {
+      "description": "Context text: link",
+      "message": "Shorten link"
+   },
+   "ContextPage": {
+      "description": "Context text: page",
+      "message": "Shorten page url"
+   },
+   "ContextSelection": {
+      "description": "Context text: selection",
+      "message": "Shorten selected link"
+   },
+   "ContextVideo": {
+      "description": "Context text: html5 video",
+      "message": "Shorten video url"
+   },
+   "ExtensionDesc": {
+      "message": "Chromerly is a simple yet featureful URL-shortener extension."
+   },
+   "ExtensionName": {
+      "message": "Chromerly URL-shortener"
+   },
+   "FailFormat": {
+      "description": "Notification text: bad format",
+      "message": "Failed to shorten, check your input!"
+   },
+   "FailGeneral": {
+      "description": "Notification text: fail",
+      "message": "Failed to shorten. I'm terribly sorry, try again later!"
+   },
+   "FailLimit": {
+      "description": "Notification text: limit reached",
+      "message": "Failed to shorten, your shortening quota is depleted!"
+   },
+   "InfoCreated": {
+      "description": "",
+      "message": "Created"
+   },
+   "InfoFail": {
+      "description": "",
+      "message": "Could not find info!"
+   },
+   "InfoLoading": {
+      "description": "",
+      "message": "Looking up the URL..."
+   },
+   "InfoRedirectsTo": {
+      "description": "",
+      "message": "Redirects to"
+   },
+   "InfoTitle": {
+      "description": "",
+      "message": "Information for"
+   },
+   "InfoUrlTitle": {
+      "description": "",
+      "message": "Page Title"
+   },
+   "InfoVisits": {
+      "description": "",
+      "message": "Number of visits"
+   },
+   "NoticeCopied": {
+      "description": "Notification text: copied",
+      "message": "Address copied!"
+   },
+   "OptionsChromerlyBy": {
+      "description": "Chromerly * name",
+      "message": "by"
+   },
+   "OptionsDone": {
+      "description": "Done! notice",
+      "message": "Done!"
+   },
+   "OptionsInfo": {
+      "description": "Preview URLs",
+      "message": "Preview links"
+   },
+   "OptionsInfoTip": {
+      "description": "tip text",
+      "message": "&laquo; Instead of opening shortened link, show info page."
+   },
+   "OptionsProject": {
+      "description": "Link to project",
+      "message": "the code"
+   },
+   "OptionsReset": {
+      "description": "Reset-button",
+      "message": "Reset"
+   },
+   "OptionsSave": {
+      "description": "Save-button",
+      "message": "Save"
+   },
+   "OptionsTimeout": {
+      "description": "label for range",
+      "message": "Notification timeout"
+   },
+   "OptionsTimeoutUnit": {
+      "description": "what unit it is",
+      "message": "seconds"
+   },
+   "OptionsTimeoutWarning": {
+      "description": "a warning text",
+      "message": "&laquo; You won't see \u003Cb\u003Eany\u003C/b\u003E notification!"
+   },
+   "OptionsTitle": {
+      "description": "h1 on options",
+      "message": "Options for Chromerly URL-shortener"
+   },
+   "UrlyFailed": {
+      "description": "Icon's tooltip: failed",
+      "message": "Failed!"
+   },
+   "UrlyProcessing": {
+      "description": "Icon's tooltip: processing",
+      "message": "Processing..."
+   },
+   "UrlyShorten": {
+      "description": "Icon's tooltip: ready",
+      "message": "Shorten url!"
+   }
+}

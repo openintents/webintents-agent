@@ -2,6 +2,7 @@ package org.openintents.wiagent.ui;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -61,7 +62,7 @@ public class WebIntentsAgentActivity extends Activity
     private final static int FILECHOOSER_RESULTCODE = 1;
     
     private Handler mUIThreadHandler;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,14 +157,13 @@ public class WebIntentsAgentActivity extends Activity
                 mUploadFile = uploadFile;
                 android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_GET_CONTENT);  
                 intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);  
-                intent.setType(acceptType);  
+                intent.setType(acceptType);                
                 WebIntentsAgentActivity.this.startActivityForResult(intent.createChooser(intent, "Choose file using"), FILECHOOSER_RESULTCODE); 
             }
 
             @Override
             public boolean onJsAlert(WebView view, String url, String message,
                     JsResult result) {
-                // TODO Auto-generated method stub
                 return super.onJsAlert(view, url, message, result);
             }
             
@@ -346,9 +346,21 @@ public class WebIntentsAgentActivity extends Activity
             super();
             this.mContext = mContext;
         }
+        
+        public void goBack(String data, String onSuccess) {
+            mWebView.goBackWithData(data, onSuccess);
+        }
 
-        public void startActivity(String action, String type, String data) {
-            startActivity(new WebIntent(action, type, data));
+        public void startActivity(String action, String type, String data, String onSuccess) {
+            WebIntent webIntent = new WebIntent();
+            
+            webIntent.action = action;
+            webIntent.type = type;
+            webIntent.data = data;
+            
+            webIntent.onSuccess = onSuccess;
+            
+            startActivity(webIntent);
         }
 
         @Override
@@ -404,7 +416,7 @@ public class WebIntentsAgentActivity extends Activity
                         
                         @Override
                         public void run() {
-                            mWebView.loadUrl(href, fWebIntent);    
+                            mWebView.loadUrl(href, fWebIntent, false);    
                         }
                         
                     });
