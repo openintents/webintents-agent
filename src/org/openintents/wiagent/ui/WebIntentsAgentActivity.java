@@ -246,7 +246,21 @@ public class WebIntentsAgentActivity extends Activity
 //        mWebView.loadUrl("javascritp:");
 //        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
 //        mWebView.loadUrl("file:///android_asset/www/service/webintents-debugger.html");
-        mWebView.loadUrl("file:///android_asset/www/index.html");
+        
+        
+        Intent intent = getIntent();
+        
+        if (intent.getAction() == null) {
+            WebIntent webIntent = new WebIntent();
+            webIntent.action = intent.getStringExtra("action");
+            webIntent.data = intent.getStringExtra("data");
+            webIntent.type = intent.getStringExtra("type");
+            String href = intent.getStringExtra("href");
+            mWebView.loadUrl(href, webIntent, false);
+        } else {
+            mWebView.loadUrl("file:///android_asset/www/index.html");
+        }
+        
 //        mWebView.loadUrl("http://examples.webintents.org/intents/shorten/shorten.html");
 //        mWebView.loadUrl("https://twitter.com/intent/session");
 //        mWebView.loadUrl("https://m.facebook.com/"); 
