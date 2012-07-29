@@ -1,5 +1,7 @@
 package org.openintents.wiagent.sample;
 
+import org.openintents.wiagent.WebIntentsHelper;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -23,13 +25,13 @@ public class OIWebIntentsAndroidSampleAppActivity extends Activity {
             
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.putExtra("action", android.content.Intent.ACTION_SEND);
-                intent.putExtra("type", "text/uri-list");
-                intent.putExtra("data", etShare.getText().toString());
-                intent.setComponent(new ComponentName("org.openintents.wiagent", "org.openintents.wiagent.WebIntentsHelperActivity"));
+                Intent intent = new Intent(android.content.Intent.ACTION_SEND);                
+                intent.setType("text/uri-list");                
+                intent.putExtra(android.content.Intent.EXTRA_TEXT, etShare.getEditableText().toString());
                 
-                startActivity(intent);
+                WebIntentsHelper helper = new WebIntentsHelper(OIWebIntentsAndroidSampleAppActivity.this);
+                
+                helper.applicationChooser(intent);
             }
         });
     }

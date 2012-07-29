@@ -20,12 +20,12 @@ public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
     private LayoutInflater mInflater;
     private PackageManager mPackageManager;
     
-    private List<ResolveInfo> mObjects;
+    private List<ResolveInfo> mAndroidAppList;
 
-    public AndroidAppArrayAdapter(Context context, List<ResolveInfo> objects) {
-        super(context, R.layout.list_item_android_app, objects);
+    public AndroidAppArrayAdapter(Context context, List<ResolveInfo> androidAppList) {
+        super(context, R.layout.list_item_android_app, androidAppList);
         mContext = context;
-        mObjects = objects;       
+        mAndroidAppList = androidAppList;       
         mInflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mPackageManager = mContext.getPackageManager();
@@ -48,8 +48,8 @@ public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        viewHolder.text.setText(mObjects.get(position).loadLabel(mPackageManager).toString());
-        viewHolder.icon.setImageDrawable(mObjects.get(position).loadIcon(mPackageManager));
+        viewHolder.text.setText(mAndroidAppList.get(position).loadLabel(mPackageManager).toString());
+        viewHolder.icon.setImageDrawable(mAndroidAppList.get(position).loadIcon(mPackageManager));
 
         return convertView;
     }

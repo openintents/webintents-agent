@@ -51,7 +51,6 @@ public class WebAppArrayAdapter extends ArrayAdapter<WebApp> {
     private static class ViewHolder {
         
         TextView title;
-        TextView href;
-        
+        TextView href;        
     }
 }

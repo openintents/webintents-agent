@@ -1,19 +1,24 @@
 package org.openintents.wiagent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.openintents.wiagent.provider.WebIntentsProvider;
 import org.openintents.wiagent.ui.WebIntentsAgentActivity;
+import org.openintents.wiagent.ui.widget.AndroidAppArrayAdapter;
 import org.openintents.wiagent.ui.widget.WebAppArrayAdapter;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -38,7 +43,7 @@ public class WebIntentsHelperActivity extends Activity {
         AsyncTask<String, Void, ArrayList<WebApp>> webActionQuery = new AsyncTask<String, Void, ArrayList<WebApp>>() {
 
             @Override
-            protected ArrayList<WebApp> doInBackground(String... action) {
+            protected ArrayList<WebApp> doInBackground(String... params) {
                 ContentResolver cr = getContentResolver();
                 
                 String[] projection = {
@@ -46,7 +51,7 @@ public class WebIntentsHelperActivity extends Activity {
                 };
                 String selection = WebIntentsProvider.WebAndroidMap.ANDROID_ACTION + " = ?";
                 String[] selectionArgs = {
-                        action[0]
+                        params[0]
                 };
                 
                 Cursor cursor = cr.query(WebIntentsProvider.WebAndroidMap.CONTENT_URI, projection, selection, selectionArgs, null);
@@ -87,8 +92,8 @@ public class WebIntentsHelperActivity extends Activity {
                 d.setContentView(R.layout.dialog_suggested_apps);
                 
                 ListView webAppListView = (ListView) d.findViewById(R.id.web_app);
-                final WebAppArrayAdapter adapter = new WebAppArrayAdapter(WebIntentsHelperActivity.this, webAppList);
-                webAppListView.setAdapter(adapter);
+                final WebAppArrayAdapter webAppArrayAdapter = new WebAppArrayAdapter(WebIntentsHelperActivity.this, webAppList);
+                webAppListView.setAdapter(webAppArrayAdapter);
                 
                 webAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -97,13 +102,38 @@ public class WebIntentsHelperActivity extends Activity {
                             int position, long id) {
                         d.dismiss();
                         
-                        WebApp webApp = adapter.getItem(position);
+                        WebApp webApp = webAppArrayAdapter.getItem(position);
                         Intent intent = new Intent(getApplication(), WebIntentsAgentActivity.class);
                         intent.putExtra("href", webApp.href);
                         intent.putExtra("action", mAction);
                         intent.putExtra("type", mType);
                         intent.putExtra("data", mData);
                         
+                        startActivity(intent);
+                    }
+                });
+                
+                ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);
+
+                Intent intent = new Intent(mAction);
+                intent.setType(mType);
+                List<ResolveInfo> androidAppList = getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY); 
+                
+                AndroidAppArrayAdapter androidAppArrayAdapter = new AndroidAppArrayAdapter(WebIntentsHelperActivity.this, androidAppList);
+                
+                androidAppListView.setAdapter(androidAppArrayAdapter);
+                
+                androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position,
+                            long id) {  
+                        d.dismiss();
+                        Adapter adapter = (AndroidAppArrayAdapter) parent.getAdapter();
+                        ResolveInfo ri = (ResolveInfo) adapter.getItem(position);
+                        Intent intent = new Intent();
+                        intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
+                        intent.putExtra(Intent.EXTRA_TEXT, mData);
                         startActivity(intent);
                     }
                 });

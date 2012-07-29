@@ -485,16 +485,6 @@ public class WebIntentsAgentActivity extends Activity
                 }
             });
             
-            androidAppListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-                @Override
-                public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                        int arg2, long arg3) {
-                    // TODO Auto-generated method stub
-                    return false;
-                }
-            });
-            
             d.show();
         }
     }
