@@ -304,7 +304,7 @@ public class CustomWebView extends WebView {
                                 
                                 for (Element webintent : webintents) {
                                     String[] projection = {
-                                        WebIntentsProvider.WebIntents.ID                         
+                                        WebIntentsProvider.WebIntents._ID                         
                                     };
                                     String selection = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
                                             WebIntentsProvider.WebIntents.TYPE + " = ? and " +

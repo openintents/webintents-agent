@@ -389,7 +389,7 @@ public class WebIntentsAgentActivity extends Activity
             ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);            
             
             String[] projectionWebIntents = {
-                    WebIntentsProvider.WebIntents.ID,    
+                    WebIntentsProvider.WebIntents._ID,    
                     WebIntentsProvider.WebIntents.TITLE,
                     WebIntentsProvider.WebIntents.HREF
             };
@@ -439,7 +439,7 @@ public class WebIntentsAgentActivity extends Activity
             });
             
             String[] projectionAndroidIntents = {
-                    WebIntentsProvider.WebAndroidMap.ID,    
+                    WebIntentsProvider.WebAndroidMap._ID,    
                     WebIntentsProvider.WebAndroidMap.ANDROID_ACTION
             };
             

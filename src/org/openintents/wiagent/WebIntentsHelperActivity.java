@@ -24,7 +24,8 @@ import android.widget.ListView;
 
 public class WebIntentsHelperActivity extends Activity {
     
-    private String mAction;
+    private ArrayList<String> mWebActionList;
+    private String mAndroidAction;
     private String mType;
     private String mData;
 
@@ -36,46 +37,38 @@ public class WebIntentsHelperActivity extends Activity {
         
         Intent intent = getIntent();
         
-        mAction = intent.getStringExtra("action");
+        mWebActionList = intent.getStringArrayListExtra("web_actions");
+        mAndroidAction = intent.getStringExtra("android_action");
         mType = intent.getStringExtra("type");
         mData = intent.getStringExtra("data");
         
-        AsyncTask<String, Void, ArrayList<WebApp>> webActionQuery = new AsyncTask<String, Void, ArrayList<WebApp>>() {
+        AsyncTask<Void, Void, ArrayList<WebApp>> webActionQuery = new AsyncTask<Void, Void, ArrayList<WebApp>>() {
 
             @Override
-            protected ArrayList<WebApp> doInBackground(String... params) {
+            protected ArrayList<WebApp> doInBackground(Void... params) {
                 ContentResolver cr = getContentResolver();
                 
-                String[] projection = {
-                        WebIntentsProvider.WebAndroidMap.WEB_ACTION
-                };
-                String selection = WebIntentsProvider.WebAndroidMap.ANDROID_ACTION + " = ?";
-                String[] selectionArgs = {
-                        params[0]
-                };
-                
-                Cursor cursor = cr.query(WebIntentsProvider.WebAndroidMap.CONTENT_URI, projection, selection, selectionArgs, null);
+                String[] projection;
+                String selection;
+                String[] selectionArgs;
                 
                 ArrayList<WebApp> webAppList = new ArrayList<WebApp>();
                 ArrayList<String> webAppHrefList = new ArrayList<String>();
                 
-                while (cursor.moveToNext()) {
-                    String webAction = cursor.getString(cursor.getColumnIndex(WebIntentsProvider.WebAndroidMap.WEB_ACTION));
-                    
-                    projection = new String[3];
-                    projection[0] = WebIntentsProvider.WebIntents.ID;
-                    projection[1] = WebIntentsProvider.WebIntents.HREF;
-                    projection[2] = WebIntentsProvider.WebIntents.TITLE;
+                for (String webAction : mWebActionList) {
+                    projection = new String[2];
+                    projection[0] = WebIntentsProvider.WebIntents.HREF;
+                    projection[1] = WebIntentsProvider.WebIntents.TITLE;
                     selection = WebIntentsProvider.WebIntents.ACTION + " = ?";
                     selectionArgs = new String[1];
                     selectionArgs[0] = webAction;
                     
-                    Cursor cursor1 = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, 
+                    Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, 
                             projection, selection, selectionArgs, null);
                     
-                    while (cursor1.moveToNext()) {
-                        String href = cursor1.getString(cursor1.getColumnIndex(WebIntentsProvider.WebIntents.HREF));
-                        String title = cursor1.getString(cursor1.getColumnIndex(WebIntentsProvider.WebIntents.TITLE));
+                    while (cursor.moveToNext()) {
+                        String href = cursor.getString(cursor.getColumnIndex(WebIntentsProvider.WebIntents.HREF));
+                        String title = cursor.getString(cursor.getColumnIndex(WebIntentsProvider.WebIntents.TITLE));
                         
                         if (!webAppHrefList.contains(title)) {
                             webAppHrefList.add(title);
@@ -105,7 +98,7 @@ public class WebIntentsHelperActivity extends Activity {
                         WebApp webApp = webAppArrayAdapter.getItem(position);
                         Intent intent = new Intent(getApplication(), WebIntentsAgentActivity.class);
                         intent.putExtra("href", webApp.href);
-                        intent.putExtra("action", mAction);
+                        intent.putExtra("action", mAndroidAction);
                         intent.putExtra("type", mType);
                         intent.putExtra("data", mData);
                         
@@ -115,7 +108,7 @@ public class WebIntentsHelperActivity extends Activity {
                 
                 ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);
 
-                Intent intent = new Intent(mAction);
+                Intent intent = new Intent(mAndroidAction);
                 intent.setType(mType);
                 List<ResolveInfo> androidAppList = getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY); 
                 
@@ -143,6 +136,6 @@ public class WebIntentsHelperActivity extends Activity {
             }          
         };
         
-        webActionQuery.execute(mAction);
+        webActionQuery.execute();
     }
 }

@@ -24,7 +24,7 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {        
         String sql;
         sql = "CREATE TABLE " + WebIntents.TABLE_NAME + " (" +
-                WebIntents.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                WebIntents._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 WebIntents.ACTION + " TEXT NOT NULL, " +
                 WebIntents.TYPE + " TEXT NOT NULL, " +
                 WebIntents.HREF + " TEXT NOT NULL, " +
@@ -37,7 +37,7 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         
         sql = "CREATE TABLE " + LocalServiceDomain.TABLE_NAME + " (" +
-                LocalServiceDomain.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                LocalServiceDomain._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 LocalServiceDomain.WEB_HERF + " TEXT NOT NULL, " +
                 LocalServiceDomain.WEB_DOMAIN + " TEXT NOT NULL" +
                 ");";
@@ -55,15 +55,21 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
         db.insert(LocalServiceDomain.TABLE_NAME, null, values);
         
         sql = "CREATE TABLE " + WebAndroidMap.TABLE_NAME + " (" +
-                WebAndroidMap.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                WebAndroidMap._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 WebAndroidMap.WEB_ACTION + " TEXT NOT NULL, " +
-                WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL" +
+                WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL, " +
+                WebAndroidMap.DATA_TYPE + " TEXT NOT NULL, " +
+                WebAndroidMap.ANDROID_DATA + " TEXT NOT NULL" +
                 ");";
         db.execSQL(sql);
         
         values.clear();
+        
         values.put(WebAndroidMap.WEB_ACTION, "http://webintents.org/share");
-        values.put(WebAndroidMap.ANDROID_ACTION, "android.intent.action.SEND");
+        values.put(WebAndroidMap.ANDROID_ACTION, android.content.Intent.ACTION_SEND);
+        values.put(WebAndroidMap.DATA_TYPE, "text/uri-list");
+        values.put(WebAndroidMap.ANDROID_DATA, android.content.Intent.EXTRA_TEXT);
+        
         db.insert(WebAndroidMap.TABLE_NAME, null, values);       
     }
 

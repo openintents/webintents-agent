@@ -1,5 +1,6 @@
 package org.openintents.wiagent.sample;
 
+import org.openintents.wiagent.R;
 import org.openintents.wiagent.WebIntentsHelper;
 
 import android.app.Activity;

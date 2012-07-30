@@ -31,7 +31,7 @@ public class WebAppManagementActivity extends Activity {
             @Override
             protected Cursor doInBackground(Void... params) {
                 String[] projection = {
-                        WebIntentsProvider.WebIntents.ID
+                        WebIntentsProvider.WebIntents._ID
                 };
                 String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0'";
                 

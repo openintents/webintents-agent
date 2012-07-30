@@ -48,7 +48,7 @@ public class WebIntentsByAppListFragment extends ListFragment {
             @Override
             protected Cursor doInBackground(String... params) {
                 String[] projection = {
-                        WebIntentsProvider.WebIntents.ID,
+                        WebIntentsProvider.WebIntents._ID,
                         WebIntentsProvider.WebIntents.ACTION,
                         WebIntentsProvider.WebIntents.TYPE
                     };
