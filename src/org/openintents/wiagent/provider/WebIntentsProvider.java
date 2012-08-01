@@ -20,7 +20,7 @@ public class WebIntentsProvider extends ContentProvider {
         public static final String TABLE_NAME = "web_intents";
         
         // columns
-        public static final String ID = "_id";
+        public static final String _ID = "_id";
         public static final String ACTION = "action";
         public static final String TYPE = "type";
         public static final String HREF = "href";
@@ -42,14 +42,37 @@ public class WebIntentsProvider extends ContentProvider {
         public static final String TABLE_NAME = "web_android_map";
         
         // columns
-        public static final String ID = "_id";
+        public static final String _ID = "_id";
         public static final String WEB_ACTION = "web_action";
         public static final String ANDROID_ACTION ="android_action";
         
+        public static final String DATA_TYPE = "data_type";
+        
+        /**
+         * For different android actions, data may be put in different fields.
+         * This column keeps such information which can be used to map data from web intents
+         * to android intents and vice versa.
+         */
+        public static final String ANDROID_DATA = "android_data";
+        
         public static final Uri CONTENT_URI =
                 Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
-        
     }    
+    
+    // table 'local_service_domain', used for solve cross-domain issues caused by
+    // service in 'assets/www/service'
+    public static class LocalServiceDomain {
+        
+        public static final String TABLE_NAME = "local_service_domain";
+        
+        // columns
+        public static final String _ID = "_id";
+        public static final String WEB_HERF = "web_href";
+        public static final String WEB_DOMAIN = "domain";
+        
+        public static final Uri CONTENT_URI =
+                Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
+    }
     
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     
@@ -57,11 +80,13 @@ public class WebIntentsProvider extends ContentProvider {
     private static final int WEB_INTENTS = 1;
     private static final int WEB_INTENTS_ID = 2;
     private static final int WEB_ANDRIOD_MAP = 3;
+    private static final int LOCAL_SERVIC_DOMAIN = 4;
     
     static {
         URI_MATCHER.addURI(AUTHORITY, WebIntents.TABLE_NAME, WEB_INTENTS);
         URI_MATCHER.addURI(AUTHORITY, WebIntents.TABLE_NAME + "/#", WEB_INTENTS_ID);
         URI_MATCHER.addURI(AUTHORITY, WebAndroidMap.TABLE_NAME, WEB_ANDRIOD_MAP);
+        URI_MATCHER.addURI(AUTHORITY, LocalServiceDomain.TABLE_NAME, LOCAL_SERVIC_DOMAIN);
     }
     
     private WebIntentsDatabase mWebIntentsDatabaseOpenHelper;
@@ -124,11 +149,15 @@ public class WebIntentsProvider extends ContentProvider {
             
         case WEB_INTENTS_ID:
             qBuilder.setTables(WebIntents.TABLE_NAME);
-            qBuilder.appendWhere(WebIntents.ID + "=" + uri.getPathSegments().get(1));
+            qBuilder.appendWhere(WebIntents._ID + "=" + uri.getPathSegments().get(1));
             break;
             
         case WEB_ANDRIOD_MAP:
             qBuilder.setTables(WebAndroidMap.TABLE_NAME);
+            break;
+            
+        case LOCAL_SERVIC_DOMAIN:
+            qBuilder.setTables(LocalServiceDomain.TABLE_NAME);
             break;
 
         default:

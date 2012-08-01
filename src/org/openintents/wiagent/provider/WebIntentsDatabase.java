@@ -1,8 +1,10 @@
 package org.openintents.wiagent.provider;
 
+import org.openintents.wiagent.provider.WebIntentsProvider.LocalServiceDomain;
 import org.openintents.wiagent.provider.WebIntentsProvider.WebIntents;
 import org.openintents.wiagent.provider.WebIntentsProvider.WebAndroidMap;
 
+import android.app.LocalActivityManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,10 +21,10 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
+    public void onCreate(SQLiteDatabase db) {        
         String sql;
         sql = "CREATE TABLE " + WebIntents.TABLE_NAME + " (" +
-                WebIntents.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                WebIntents._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 WebIntents.ACTION + " TEXT NOT NULL, " +
                 WebIntents.TYPE + " TEXT NOT NULL, " +
                 WebIntents.HREF + " TEXT NOT NULL, " +
@@ -33,26 +35,42 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
         db.execSQL(sql);
         
         ContentValues values = new ContentValues();
-//        values.put(WebIntents.ACTION, "http://webintents.org/share");
-//        values.put(WebIntents.TYPE, "text/uri-list");
-//        values.put(WebIntents.HREF, "file:///android_asset/www/service/twitter_text_share.html");
-//        values.put(WebIntents.TITLE, "Share Link to Twitter");
-//        values.put(WebIntents.DISPOSITION, "inline"); 
-//        values.put(WebIntents.BOOKMARKED, "1");
-//        db.insert(WebIntents.TABLE_NAME, null, values);
+        
+        sql = "CREATE TABLE " + LocalServiceDomain.TABLE_NAME + " (" +
+                LocalServiceDomain._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                LocalServiceDomain.WEB_HERF + " TEXT NOT NULL, " +
+                LocalServiceDomain.WEB_DOMAIN + " TEXT NOT NULL" +
+                ");";
+        db.execSQL(sql);
+        
+        // Insert domains for local services
+        values.clear();
+        values.put(LocalServiceDomain.WEB_HERF, "file:///android_asset/www/service/shorten_with_Goo.gl.html");
+        values.put(LocalServiceDomain.WEB_DOMAIN, "http://demos.webintents.org/");
+        db.insert(LocalServiceDomain.TABLE_NAME, null, values);
+        
+        values.clear();
+        values.put(LocalServiceDomain.WEB_HERF, "file:///android_asset/www/service/chromerly_URL-shortener/2.1_0/intent/intent.html");
+        values.put(LocalServiceDomain.WEB_DOMAIN, "http://urly.fi/");
+        db.insert(LocalServiceDomain.TABLE_NAME, null, values);
         
         sql = "CREATE TABLE " + WebAndroidMap.TABLE_NAME + " (" +
-                WebAndroidMap.ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                WebAndroidMap._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 WebAndroidMap.WEB_ACTION + " TEXT NOT NULL, " +
-                WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL" +
+                WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL, " +
+                WebAndroidMap.DATA_TYPE + " TEXT NOT NULL, " +
+                WebAndroidMap.ANDROID_DATA + " TEXT NOT NULL" +
                 ");";
-        
         db.execSQL(sql);
         
         values.clear();
+        
         values.put(WebAndroidMap.WEB_ACTION, "http://webintents.org/share");
-        values.put(WebAndroidMap.ANDROID_ACTION, "android.intent.action.SEND");
-        db.insert(WebAndroidMap.TABLE_NAME, null, values);
+        values.put(WebAndroidMap.ANDROID_ACTION, android.content.Intent.ACTION_SEND);
+        values.put(WebAndroidMap.DATA_TYPE, "text/uri-list");
+        values.put(WebAndroidMap.ANDROID_DATA, android.content.Intent.EXTRA_TEXT);
+        
+        db.insert(WebAndroidMap.TABLE_NAME, null, values);       
     }
 
     @Override

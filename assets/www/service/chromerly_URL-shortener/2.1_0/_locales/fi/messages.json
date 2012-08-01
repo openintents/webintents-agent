@@ -1,0 +1,132 @@
+{
+   "ContextAudio": {
+      "description": "Context text: html5 audio",
+      "message": "Lyhenn\u00E4 \u00E4\u00E4nen osoite"
+   },
+   "ContextImage": {
+      "description": "Context text: image",
+      "message": "Lyhenn\u00E4 kuvan osoite"
+   },
+   "ContextLink": {
+      "description": "Context text: link",
+      "message": "Lyhenn\u00E4 linkki"
+   },
+   "ContextPage": {
+      "description": "Context text: page",
+      "message": "Lyhenn\u00E4 sivun osoite"
+   },
+   "ContextSelection": {
+      "description": "Context text: selection",
+      "message": "Lyhenn\u00E4 tekstiosoite"
+   },
+   "ContextVideo": {
+      "description": "Context text: html5 video",
+      "message": "Lyhenn\u00E4 videon osoite"
+   },
+   "ExtensionDesc": {
+      "message": "Chromerly on yksinkertainen url-lyhent\u00E4j\u00E4."
+   },
+   "ExtensionName": {
+      "message": "Chromerly URL-lyhent\u00E4j\u00E4"
+   },
+   "FailFormat": {
+      "description": "Notification text: bad format",
+      "message": "Lyhent\u00E4minen ep\u00E4onnistui, tarkista sy\u00F6tteesi!"
+   },
+   "FailGeneral": {
+      "description": "Notification text: fail",
+      "message": "Lyhent\u00E4minen ep\u00E4onnistui. Olen kamalan pahoillani, yrit\u00E4 uudestaan my\u00F6hemmin!"
+   },
+   "FailLimit": {
+      "description": "Notification text: limit reached",
+      "message": "Lyhent\u00E4minen ep\u00E4onnistui, olet t\u00E4ytt\u00E4nyt kiinti\u00F6si!"
+   },
+   "InfoCreated": {
+      "description": "",
+      "message": "Luotu"
+   },
+   "InfoFail": {
+      "description": "",
+      "message": "Tietoja ei l\u00F6ytynyt!"
+   },
+   "InfoLoading": {
+      "description": "",
+      "message": "Etsit\u00E4\u00E4n tietoja..."
+   },
+   "InfoRedirectsTo": {
+      "description": "",
+      "message": "Uudelleenohjaa"
+   },
+   "InfoTitle": {
+      "description": "",
+      "message": "Tiedot"
+   },
+   "InfoUrlTitle": {
+      "description": "",
+      "message": "Sivun otsikko"
+   },
+   "InfoVisits": {
+      "description": "",
+      "message": "K\u00E4ynnit"
+   },
+   "NoticeCopied": {
+      "description": "Notification text: copied",
+      "message": "Osoite kopioitu!"
+   },
+   "OptionsChromerlyBy": {
+      "description": "Chromerly * name",
+      "message": "by"
+   },
+   "OptionsDone": {
+      "description": "Done! notice",
+      "message": "Valmis!"
+   },
+   "OptionsInfo": {
+      "description": "Preview URLs",
+      "message": "Esikatsele linkkej\u00E4"
+   },
+   "OptionsInfoTip": {
+      "description": "tip text",
+      "message": "&laquo; Linkkien avaamisen sijaan n\u00E4yt\u00E4 tietoja."
+   },
+   "OptionsProject": {
+      "description": "Link to project",
+      "message": "koodi"
+   },
+   "OptionsReset": {
+      "description": "Reset-button",
+      "message": "Palauta"
+   },
+   "OptionsSave": {
+      "description": "Save-button",
+      "message": "Tallenna"
+   },
+   "OptionsTimeout": {
+      "description": "label for range",
+      "message": "Ilmoituksen aikakatkaisu"
+   },
+   "OptionsTimeoutUnit": {
+      "description": "what unit it is",
+      "message": "sekuntia"
+   },
+   "OptionsTimeoutWarning": {
+      "description": "a warning text",
+      "message": "&laquo; Ilmoitusta ei n\u00E4ytet\u00E4 \u003Cb\u003Eollenkaan\u003C/b\u003E!"
+   },
+   "OptionsTitle": {
+      "description": "h1 on options",
+      "message": "Asetukset Chromerly URL-lyhent\u00E4j\u00E4lle"
+   },
+   "UrlyFailed": {
+      "description": "Icon's tooltip: failed",
+      "message": "Ep\u00E4onnistui!"
+   },
+   "UrlyProcessing": {
+      "description": "Icon's tooltip: processing",
+      "message": "Prosessoidaan..."
+   },
+   "UrlyShorten": {
+      "description": "Icon's tooltip: ready",
+      "message": "Lyhenn\u00E4 osoite!"
+   }
+}

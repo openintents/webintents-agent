@@ -2,6 +2,7 @@ package org.openintents.wiagent.ui;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -61,7 +62,7 @@ public class WebIntentsAgentActivity extends Activity
     private final static int FILECHOOSER_RESULTCODE = 1;
     
     private Handler mUIThreadHandler;
-
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,14 +157,13 @@ public class WebIntentsAgentActivity extends Activity
                 mUploadFile = uploadFile;
                 android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_GET_CONTENT);  
                 intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);  
-                intent.setType(acceptType);  
+                intent.setType(acceptType);                
                 WebIntentsAgentActivity.this.startActivityForResult(intent.createChooser(intent, "Choose file using"), FILECHOOSER_RESULTCODE); 
             }
 
             @Override
             public boolean onJsAlert(WebView view, String url, String message,
                     JsResult result) {
-                // TODO Auto-generated method stub
                 return super.onJsAlert(view, url, message, result);
             }
             
@@ -246,7 +246,21 @@ public class WebIntentsAgentActivity extends Activity
 //        mWebView.loadUrl("javascritp:");
 //        mWebView.loadUrl("http://examples.webintents.org/usage/startActivity/index.html");
 //        mWebView.loadUrl("file:///android_asset/www/service/webintents-debugger.html");
-        mWebView.loadUrl("file:///android_asset/www/index.html");
+        
+        
+        Intent intent = getIntent();
+        
+        if (intent.getAction() == null) {
+            WebIntent webIntent = new WebIntent();
+            webIntent.action = intent.getStringExtra("action");
+            webIntent.data = intent.getStringExtra("data");
+            webIntent.type = intent.getStringExtra("type");
+            String href = intent.getStringExtra("href");
+            mWebView.loadUrl(href, webIntent, false);
+        } else {
+            mWebView.loadUrl("file:///android_asset/www/index.html");
+        }
+        
 //        mWebView.loadUrl("http://examples.webintents.org/intents/shorten/shorten.html");
 //        mWebView.loadUrl("https://twitter.com/intent/session");
 //        mWebView.loadUrl("https://m.facebook.com/"); 
@@ -346,9 +360,21 @@ public class WebIntentsAgentActivity extends Activity
             super();
             this.mContext = mContext;
         }
+        
+        public void goBack(String data, String onSuccess) {
+            mWebView.goBackWithData(data, onSuccess);
+        }
 
-        public void startActivity(String action, String type, String data) {
-            startActivity(new WebIntent(action, type, data));
+        public void startActivity(String action, String type, String data, String onSuccess) {
+            WebIntent webIntent = new WebIntent();
+            
+            webIntent.action = action;
+            webIntent.type = type;
+            webIntent.data = data;
+            
+            webIntent.onSuccess = onSuccess;
+            
+            startActivity(webIntent);
         }
 
         @Override
@@ -363,7 +389,7 @@ public class WebIntentsAgentActivity extends Activity
             ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);            
             
             String[] projectionWebIntents = {
-                    WebIntentsProvider.WebIntents.ID,    
+                    WebIntentsProvider.WebIntents._ID,    
                     WebIntentsProvider.WebIntents.TITLE,
                     WebIntentsProvider.WebIntents.HREF
             };
@@ -404,7 +430,7 @@ public class WebIntentsAgentActivity extends Activity
                         
                         @Override
                         public void run() {
-                            mWebView.loadUrl(href, fWebIntent);    
+                            mWebView.loadUrl(href, fWebIntent, false);    
                         }
                         
                     });
@@ -413,7 +439,7 @@ public class WebIntentsAgentActivity extends Activity
             });
             
             String[] projectionAndroidIntents = {
-                    WebIntentsProvider.WebAndroidMap.ID,    
+                    WebIntentsProvider.WebAndroidMap._ID,    
                     WebIntentsProvider.WebAndroidMap.ANDROID_ACTION
             };
             
@@ -456,16 +482,6 @@ public class WebIntentsAgentActivity extends Activity
                     intent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
                     intent.putExtra(Intent.EXTRA_TEXT, webIntent.data);
                     mContext.startActivity(intent);
-                }
-            });
-            
-            androidAppListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-
-                @Override
-                public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                        int arg2, long arg3) {
-                    // TODO Auto-generated method stub
-                    return false;
                 }
             });
             

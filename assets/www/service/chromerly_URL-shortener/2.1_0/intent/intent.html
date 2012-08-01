@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--Chromerly is a Chrome Extension to utilize the Finnish urly.fi.
+    Copyright (C) 2011-2012  Ville 'tuhoojabotti' Lahdenvuo
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
+
+<html>
+<head>
+<base target="_blank" />
+<link rel="stylesheet" href="intent.css" />
+<script src="file:///android_asset/www/service/chromerly_URL-shortener/2.1_0/shorten.js"></script>
+<script src="file:///android_asset/www/service/chromerly_URL-shortener/2.1_0/intent/intent.js"></script>
+<intent action="http://webintents.org/shorten" type="text/uri-list"
+	title="Shorten with Chromerly"
+	href="file:///android_asset/www/service/chromerly_URL-shortener/2.1_0/intent/intent.html" />
+</head>
+<body>
+	<input type="text" id="url" style="position: absolute; opacity: 0;" />
+	<img id="qr" src="file:///android_asset/www/service/chromerly_URL-shortener/2.1_0/graphics/qr.png" alt="QR-Code" width="125"
+		height="125" />
+	<div id="original"></div>
+	<div id="info">
+		<a href="#" id="link">...</a><br /> <span id="copied"></span>
+	</div>
+</body>
+</html>

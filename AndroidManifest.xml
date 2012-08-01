@@ -24,10 +24,27 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+
     <activity
       android:name=".ui.WebAppManagementActivity"
       android:label="My Applications" >
     </activity>
+    <activity
+      android:name=".WebIntentsHelperActivity"
+      android:exported="true"
+      android:label="@string/app_name" >
+    </activity>
+        <!--  
+    <activity
+      android:name=".sample.OIWebIntentsAndroidSampleAppActivity"
+      android:label="@string/app_name" >
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+        -->
   </application>
 
 </manifest>

@@ -4,11 +4,11 @@ import org.openintents.wiagent.WebIntent;
 
 public class HistoryStackEntry {
 
-    public String historyUrl;
-    public WebIntent historyWebIntent;
+    public String url;
+    public WebIntent webIntent;
     
     public HistoryStackEntry(String historyUrl, WebIntent historyWebIntent) {
-        this.historyUrl = historyUrl;
-        this.historyWebIntent = historyWebIntent;
+        this.url = historyUrl;
+        this.webIntent = historyWebIntent;
     }
 }
