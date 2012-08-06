@@ -10,11 +10,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+/**
+ * Content provider for Web Intents tables
+ * @author Cheng Zheng
+ *
+ */
 public class WebIntentsProvider extends ContentProvider {
      
     public static final String AUTHORITY = "org.openintents.wiagent";
     
-    // table 'intents'
+    /**
+     * Class for table intents
+     * @author Cheng Zheng
+     *
+     */
     public static class WebIntents {
         
         public static final String TABLE_NAME = "web_intents";
@@ -35,8 +44,12 @@ public class WebIntentsProvider extends ContentProvider {
         public static final Uri CONTENT_URI =
                 Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
     }
-    
-    // table 'web_android_map'
+
+    /**
+     * Class for table web_android_map
+     * @author Cheng Zheng
+     *
+     */
     public static class WebAndroidMap {
         
         public static final String TABLE_NAME = "web_android_map";

@@ -12,24 +12,29 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.FrameLayout;
 
+/**
+ * The activity for the menu item Application Management
+ * @author Cheng Zheng
+ *
+ */
 public class WebAppManagementActivity extends Activity {
-    
-    private FrameLayout mSubcontainer;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        
-        setContentView(R.layout.fragment_webapp_list);
-        mSubcontainer = (FrameLayout) findViewById(R.id.subcontainer);
-        
-        final ActionBar bar = getActionBar();
-        bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        
-        AsyncTask<Void, Void, Cursor> newAppQueryTask =  new AsyncTask<Void, Void, Cursor> () {
+	private FrameLayout mSubcontainer;
 
-            @Override
-            protected Cursor doInBackground(Void... params) {
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.fragment_webapp_list);
+		mSubcontainer = (FrameLayout) findViewById(R.id.subcontainer);
+
+		final ActionBar bar = getActionBar();
+		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+		AsyncTask<Void, Void, Cursor> newAppQueryTask =  new AsyncTask<Void, Void, Cursor> () {
+
+			@Override
+			protected Cursor doInBackground(Void... params) {
                 String[] projection = {
                         WebIntentsProvider.WebIntents._ID
                 };
@@ -95,5 +100,4 @@ public class WebAppManagementActivity extends Activity {
                     }                    
                 }));
     }
-
 }

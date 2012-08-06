@@ -12,6 +12,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+/**
+ * An array adapter class for Web application
+ * @author Cheng Zheng
+ *
+ */
 public class WebAppArrayAdapter extends ArrayAdapter<WebApp> {
     
     private List<WebApp> mWebAppList;
@@ -48,9 +53,14 @@ public class WebAppArrayAdapter extends ArrayAdapter<WebApp> {
         return convertView;
     }
     
+    /**
+     * Hold the view for performance purpose
+     * @author Cheng Zheng
+     *
+     */
     private static class ViewHolder {
-        
+
         TextView title;
-        TextView href;        
+        TextView href;
     }
 }

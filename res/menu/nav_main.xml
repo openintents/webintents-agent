@@ -20,11 +20,6 @@
         android:title="Refresh">
     </item>
     <item
-        android:id="@+id/menu_addr_bar"
-        android:actionViewClass="android.widget.SearchView"
-        android:showAsAction="always">
-    </item>
-    <item
         android:id="@+id/menu_home"
         android:icon="@drawable/ic_menu_home"
         android:showAsAction="ifRoom"

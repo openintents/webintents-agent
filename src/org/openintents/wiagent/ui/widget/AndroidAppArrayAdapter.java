@@ -14,6 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+/**
+ * An array adpater class for Android apps, like WebAppArrayAdapter
+ * @author Cheng Zheng
+ *
+ */
 public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
     
     private Context mContext;

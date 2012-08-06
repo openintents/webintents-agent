@@ -1,5 +1,10 @@
 package org.openintents.wiagent;
 
+/**
+ * This is a Web application wrapper class
+ * @author Cheng Zheng
+ *
+ */
 public class WebApp {
     
     public String title;

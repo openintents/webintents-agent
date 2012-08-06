@@ -22,9 +22,14 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+/**
+ * Activity class for WebIntentsHelper. This activity helps transfer the context from
+ * external Andriod apps to that of OI WebIntents Agent
+ * @author Cheng Zheng
+ *
+ */
 public class WebIntentsHelperActivity extends Activity {
-    
-    private ArrayList<String> mWebActionList;
+
     private String mAndroidAction;
     private String mType;
     private String mData;
@@ -37,11 +42,12 @@ public class WebIntentsHelperActivity extends Activity {
         
         Intent intent = getIntent();
         
-        mWebActionList = intent.getStringArrayListExtra("web_actions");
+        final ArrayList<String> webActionList = intent.getStringArrayListExtra("web_actions");
         mAndroidAction = intent.getStringExtra("android_action");
         mType = intent.getStringExtra("type");
         mData = intent.getStringExtra("data");
         
+        // Query for the corresponding Web action of the Android action
         AsyncTask<Void, Void, ArrayList<WebApp>> webActionQuery = new AsyncTask<Void, Void, ArrayList<WebApp>>() {
 
             @Override
@@ -55,7 +61,7 @@ public class WebIntentsHelperActivity extends Activity {
                 ArrayList<WebApp> webAppList = new ArrayList<WebApp>();
                 ArrayList<String> webAppHrefList = new ArrayList<String>();
                 
-                for (String webAction : mWebActionList) {
+                for (String webAction : webActionList) {
                     projection = new String[2];
                     projection[0] = WebIntentsProvider.WebIntents.HREF;
                     projection[1] = WebIntentsProvider.WebIntents.TITLE;
@@ -84,6 +90,7 @@ public class WebIntentsHelperActivity extends Activity {
             protected void onPostExecute(ArrayList<WebApp> webAppList) {
                 d.setContentView(R.layout.dialog_suggested_apps);
                 
+                // Create the list of Web apps for selection
                 ListView webAppListView = (ListView) d.findViewById(R.id.web_app);
                 final WebAppArrayAdapter webAppArrayAdapter = new WebAppArrayAdapter(WebIntentsHelperActivity.this, webAppList);
                 webAppListView.setAdapter(webAppArrayAdapter);
@@ -105,7 +112,8 @@ public class WebIntentsHelperActivity extends Activity {
                         startActivity(intent);
                     }
                 });
-                
+
+                // Create the list of Android apps for selection
                 ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);
 
                 Intent intent = new Intent(mAndroidAction);
@@ -135,7 +143,7 @@ public class WebIntentsHelperActivity extends Activity {
                 d.show();
             }          
         };
-        
-        webActionQuery.execute();
-    }
+
+		webActionQuery.execute();
+	}
 }

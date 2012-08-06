@@ -14,6 +14,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+/**
+ * This class is only for internal test, will be removed in the future
+ * @deprecated
+ * @author Cheng Zheng
+ *
+ */
 public class OIWebIntentsAndroidSampleAppActivity extends Activity {
     /** Called when the activity is first created. */
     @Override
@@ -38,15 +44,5 @@ public class OIWebIntentsAndroidSampleAppActivity extends Activity {
                 helper.createChooserWithWebActivities(intent);
             }
         });
-        
-//        ContentResolver cr = getContentResolver();
-//        
-//        String[] projection = {
-//                "web_action"
-//        };
-//        
-//        Uri contentUri = Uri.parse("content://org.openintents.wiagent/web_android_map");
-//        Cursor cursor = cr.query(contentUri, projection, null, null, null);
-//        cursor.moveToFirst();
     }
 }

@@ -23,6 +23,11 @@ import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+/**
+ * The fragment showing intents of a Web app
+ * @author Cheng Zheng
+ *
+ */
 public class WebIntentsByAppListFragment extends ListFragment {
     
     private static final String ARG_TAG_BOOKMARKED = "bookmarked";

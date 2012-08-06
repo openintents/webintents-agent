@@ -25,10 +25,15 @@ import android.widget.AbsListView.MultiChoiceModeListener;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+/**
+ * The fragement for diplay, add and remove Web apps
+ * @author Cheng Zheng
+ *
+ */
 public class WebAppListFragment extends ListFragment {
-    
-    private static final String ARG_TAG_BOOKMARKED = "bookmarked";
-    
+
+	private static final String ARG_TAG_BOOKMARKED = "bookmarked";
+
     private WebIntentsByAppListFragment mWebIntentsByAppListFragment;
     
     public static WebAppListFragment newInstance(boolean bookmarked) {
