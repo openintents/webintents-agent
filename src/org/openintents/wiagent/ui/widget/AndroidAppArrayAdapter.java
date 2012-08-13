@@ -7,11 +7,14 @@ import org.openintents.wiagent.R;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
@@ -20,20 +23,19 @@ import android.widget.TextView;
  *
  */
 public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
-    
-    private Context mContext;
+
     private LayoutInflater mInflater;
     private PackageManager mPackageManager;
     
     private List<ResolveInfo> mAndroidAppList;
 
     public AndroidAppArrayAdapter(Context context, List<ResolveInfo> androidAppList) {
-        super(context, R.layout.list_item_android_app, androidAppList);
-        mContext = context;
-        mAndroidAppList = androidAppList;       
-        mInflater = (LayoutInflater) mContext
+        super(context, android.R.layout.activity_list_item, androidAppList);
+
+        mAndroidAppList = androidAppList;
+        mInflater = (LayoutInflater) getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        mPackageManager = mContext.getPackageManager();
+        mPackageManager = getContext().getPackageManager();
     }
     
     @Override
@@ -42,18 +44,30 @@ public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
         ViewHolder viewHolder;
         
         if (convertView == null) {
-            convertView = mInflater.inflate(R.layout.list_item_android_app, null);
+            convertView = mInflater.inflate(android.R.layout.activity_list_item, null);
             
             viewHolder = new ViewHolder();
-            viewHolder.text = (TextView) convertView.findViewById(R.id.android_app_label);
-            viewHolder.icon = (ImageView) convertView.findViewById(R.id.android_app_icon);
+            viewHolder.text = (TextView) convertView.findViewById(android.R.id.text1);
+            viewHolder.icon = (ImageView) convertView.findViewById(android.R.id.icon);
             
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
+        // Set the layout width, height and gravity of the title of 
+        // the Android application
+        viewHolder.text.setLayoutParams(new LinearLayout.LayoutParams(
+        		LinearLayout.LayoutParams.MATCH_PARENT, 
+        		LinearLayout.LayoutParams.MATCH_PARENT));
+        viewHolder.text.setTextAppearance(getContext(), android.R.style.TextAppearance_Holo_Medium);
+        viewHolder.text.setGravity(Gravity.CENTER_VERTICAL);
         viewHolder.text.setText(mAndroidAppList.get(position).loadLabel(mPackageManager).toString());
+
+        // Set the layout parameters of the icon of the Android application
+        viewHolder.icon.setLayoutParams(new LinearLayout.LayoutParams(
+        		LinearLayout.LayoutParams.WRAP_CONTENT, 
+        		LinearLayout.LayoutParams.WRAP_CONTENT));
         viewHolder.icon.setImageDrawable(mAndroidAppList.get(position).loadIcon(mPackageManager));
 
         return convertView;
@@ -63,6 +77,5 @@ public class AndroidAppArrayAdapter extends ArrayAdapter<ResolveInfo> {
         
         TextView text;
         ImageView icon;
-        
     }
 }

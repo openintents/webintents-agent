@@ -420,7 +420,7 @@ public class WebIntentsAgentActivity extends Activity {
             d.setTitle("Suggested Applications");
             
             ListView webAppListView = (ListView) d.findViewById(R.id.web_app);
-            ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);            
+            ListView androidAppListView = (ListView) d.findViewById(R.id.android_app);
             
             // Create the list of Web apps for selection
             String[] projectionWebIntents = {
@@ -437,21 +437,21 @@ public class WebIntentsAgentActivity extends Activity {
 					webIntent.type
 			};
 
-            Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.WebIntents.CONTENT_URI, 
-                    projectionWebIntents, selectionWebIntents, selectionArgsWebIntents, null);            
+			Cursor cursorWebIntents = mContext.getContentResolver().query(WebIntentsProvider.WebIntents.CONTENT_URI, 
+					projectionWebIntents, selectionWebIntents, selectionArgsWebIntents, null);            
 
-            String[] columnWebIntents = {
-                    WebIntentsProvider.WebIntents.TITLE,
-                    WebIntentsProvider.WebIntents.HREF
-            };
+			String[] columnWebIntents = {
+					WebIntentsProvider.WebIntents.TITLE,
+					WebIntentsProvider.WebIntents.HREF
+			};
 
-            int[] mViewIDs = {
-                    android.R.id.text1,
-                    android.R.id.text2
+			int[] mViewIDs = {
+                    R.id.webapp_title,
+                    R.id.webapp_href
             };
             
             webAppListView.setAdapter(new SimpleCursorAdapter(mContext, 
-                    android.R.layout.simple_list_item_2, cursorWebIntents, columnWebIntents, mViewIDs, 0));
+                    R.layout.list_item_webapp, cursorWebIntents, columnWebIntents, mViewIDs, 0));
             
             final WebIntent fWebIntent = webIntent;
            
@@ -472,18 +472,16 @@ public class WebIntentsAgentActivity extends Activity {
                         @Override
                         public void run() {
                             mWebView.loadUrl(href, fWebIntent, false);    
-                        }
-                        
+                        }                        
                     });
                 }
-
             });
             
             // Query the corresponding Android intents and Android data fields of the Web intent
             String[] projectionAndroidIntents = {
                     WebIntentsProvider.WebAndroidMap._ID,
                     WebIntentsProvider.WebAndroidMap.ANDROID_ACTION,
-                    WebIntentsProvider.WebAndroidMap.ANDROID_DATA
+                    WebIntentsProvider.WebAndroidMap.DATA_MAP_SCHEME
             };
             
             String selectionAndroidIntents = WebIntentsProvider.WebAndroidMap.WEB_ACTION + " = ? and " +
@@ -507,7 +505,7 @@ public class WebIntentsAgentActivity extends Activity {
                     String androidAction = cursorAndroidIntents.
                             getString(cursorAndroidIntents.getColumnIndex(WebIntentsProvider.WebAndroidMap.ANDROID_ACTION));
                     String androidData = cursorAndroidIntents.
-                            getString(cursorAndroidIntents.getColumnIndex(WebIntentsProvider.WebAndroidMap.ANDROID_DATA));
+                            getString(cursorAndroidIntents.getColumnIndex(WebIntentsProvider.WebAndroidMap.DATA_MAP_SCHEME));
                     Intent androidIntent = new Intent(androidAction);
                     androidIntent.setType(webIntent.type);
                     List<ResolveInfo> listPerIntent = pm.queryIntentActivities(androidIntent, PackageManager.MATCH_DEFAULT_ONLY);

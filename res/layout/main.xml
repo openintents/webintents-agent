@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="fill_parent"
-  android:layout_height="fill_parent"
-  android:orientation="vertical" >
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical" >
 
-  <org.openintents.wiagent.ui.widget.UrlInputView
-    android:id="@+id/url"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/home_url" />
+	<org.openintents.wiagent.ui.widget.UrlInputView
+		android:id="@+id/url"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:singleLine="true"
+		android:text="@string/home_url" />
 
-  <org.openintents.wiagent.ui.widget.CustomWebView
-    android:id="@+id/webview"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+	<org.openintents.wiagent.ui.widget.CustomWebView
+		android:id="@+id/webview"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent" >
+		<requestFocus />
+	</org.openintents.wiagent.ui.widget.CustomWebView>
 
 </LinearLayout>

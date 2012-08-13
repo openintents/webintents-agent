@@ -59,7 +59,7 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
                 WebAndroidMap.WEB_ACTION + " TEXT NOT NULL, " +
                 WebAndroidMap.ANDROID_ACTION + " TEXT NOT NULL, " +
                 WebAndroidMap.DATA_TYPE + " TEXT NOT NULL, " +
-                WebAndroidMap.ANDROID_DATA + " TEXT NOT NULL" +
+                WebAndroidMap.DATA_MAP_SCHEME + " TEXT NOT NULL" +
                 ");";
         db.execSQL(sql);
         
@@ -68,7 +68,7 @@ class WebIntentsDatabase extends SQLiteOpenHelper {
         values.put(WebAndroidMap.WEB_ACTION, "http://webintents.org/share");
         values.put(WebAndroidMap.ANDROID_ACTION, android.content.Intent.ACTION_SEND);
         values.put(WebAndroidMap.DATA_TYPE, "text/uri-list");
-        values.put(WebAndroidMap.ANDROID_DATA, android.content.Intent.EXTRA_TEXT);
+        values.put(WebAndroidMap.DATA_MAP_SCHEME, android.content.Intent.EXTRA_TEXT);
         
         db.insert(WebAndroidMap.TABLE_NAME, null, values);       
     }

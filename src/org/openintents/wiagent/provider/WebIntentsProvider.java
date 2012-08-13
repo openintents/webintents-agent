@@ -16,66 +16,66 @@ import android.net.Uri;
  *
  */
 public class WebIntentsProvider extends ContentProvider {
-     
-    public static final String AUTHORITY = "org.openintents.wiagent";
-    
-    /**
-     * Class for table intents
-     * @author Cheng Zheng
-     *
-     */
-    public static class WebIntents {
-        
-        public static final String TABLE_NAME = "web_intents";
-        
-        // columns
-        public static final String _ID = "_id";
-        public static final String ACTION = "action";
-        public static final String TYPE = "type";
-        public static final String HREF = "href";
-        public static final String TITLE = "title";
-        public static final String DISPOSITION = "disposition";
-        /**
-         * Indicate if the entry is bookmarked. 1 means yes, 0 no.
-         */
-        public static final String BOOKMARKED = "bookmarked";
-                                                                        
-        
-        public static final Uri CONTENT_URI =
-                Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
-    }
 
-    /**
-     * Class for table web_android_map
-     * @author Cheng Zheng
-     *
-     */
-    public static class WebAndroidMap {
-        
-        public static final String TABLE_NAME = "web_android_map";
-        
-        // columns
-        public static final String _ID = "_id";
-        public static final String WEB_ACTION = "web_action";
-        public static final String ANDROID_ACTION ="android_action";
-        
-        public static final String DATA_TYPE = "data_type";
-        
-        /**
-         * For different android actions, data may be put in different fields.
-         * This column keeps such information which can be used to map data from web intents
-         * to android intents and vice versa.
-         */
-        public static final String ANDROID_DATA = "android_data";
-        
-        public static final Uri CONTENT_URI =
-                Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
-    }    
-    
-    // table 'local_service_domain', used for solve cross-domain issues caused by
-    // service in 'assets/www/service'
-    public static class LocalServiceDomain {
-        
+	public static final String AUTHORITY = "org.openintents.wiagent";
+
+	/**
+	 * Class for table intents
+	 * @author Cheng Zheng
+	 *
+	 */
+	public static class WebIntents {
+
+		public static final String TABLE_NAME = "web_intents";
+
+		// columns
+		public static final String _ID = "_id";
+		public static final String ACTION = "action";
+		public static final String TYPE = "type";
+		public static final String HREF = "href";
+		public static final String TITLE = "title";
+		public static final String DISPOSITION = "disposition";
+		
+		/**
+		 * Indicate if the entry is bookmarked. 1 means yes, 0 no.
+		 */
+		public static final String BOOKMARKED = "bookmarked";
+
+		public static final Uri CONTENT_URI =
+				Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
+	}
+
+	/**
+	 * Class for table web_android_map
+	 * @author Cheng Zheng
+	 *
+	 */
+	public static class WebAndroidMap {
+
+		public static final String TABLE_NAME = "web_android_map";
+
+		// columns
+		public static final String _ID = "_id";
+		public static final String WEB_ACTION = "web_action";
+		public static final String ANDROID_ACTION ="android_action";
+
+		public static final String DATA_TYPE = "data_type";
+		
+		/**
+		 * For different Android actions, data may be put in different fields.
+		 * This column keeps such information which can be used to map data between
+		 * Web intents data and Android intents data.
+		 */
+		public static final String DATA_MAP_SCHEME = "data_map_scheme";
+
+		public static final Uri CONTENT_URI =
+				Uri.parse("content://" + AUTHORITY + "/" + TABLE_NAME);
+	}
+
+	// table 'local_service_domain', used for solve cross-domain issues caused by
+	// service in 'assets/www/service'
+	public static class LocalServiceDomain {
+
         public static final String TABLE_NAME = "local_service_domain";
         
         // columns

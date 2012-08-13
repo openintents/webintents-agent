@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/web_app_header"
-        style="?android:attr/listSeparatorTextViewStyle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Web Applications" />
+	<TextView
+		android:id="@+id/web_app_header"
+		style="?android:attr/textAppearanceLarge"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_horizontal"
+		android:text="Web Applications" />
 
-    <ListView
-        android:id="@+id/web_app"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+	<ListView
+		android:id="@+id/web_app"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" >
+	</ListView>
 
-    <TextView
-        android:id="@+id/android_app_header"
-        style="?android:attr/listSeparatorTextViewStyle"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Android Applications" />
+	<TextView
+		android:id="@+id/android_app_header"
+		style="?android:attr/textAppearanceLarge"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_horizontal"
+		android:text="Android Applications" />
 
-    <ListView
-        android:id="@+id/android_app"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ListView>
+	<ListView
+		android:id="@+id/android_app"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" >
+	</ListView>
 
 </LinearLayout>
