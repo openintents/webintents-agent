@@ -18,7 +18,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
@@ -28,7 +27,6 @@ import android.widget.TextView;
 /**
  * This is a helper class for external Android apps to invoke Web apps through
  * Web Intents.
- * @author Cheng Zheng
  *
  */
 public class WebIntentsHelper {
@@ -118,98 +116,109 @@ public class WebIntentsHelper {
 			}
 
 			@Override
-			protected void onPostExecute(ArrayList<WebApp> webAppList) {				
-				// Create the content view of the chooser dialog from code
-				LinearLayout layout = new LinearLayout(mContext);
-				layout.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT, 
-						LinearLayout.LayoutParams.MATCH_PARENT));
-				layout.setOrientation(LinearLayout.VERTICAL);
+			protected void onPostExecute(ArrayList<WebApp> webAppList) {
+				if (webAppList.size() == 0) {
+				// No Web applications available and show the ordinary Android application
+				// chooser
+					mContext.startActivity(oldIntent);
+				} else {
+				// Create a chooser dialog of both Web and Android apps
+					// Create the content view of the chooser dialog from code
+					LinearLayout layout = new LinearLayout(mContext);
+					layout.setLayoutParams(new LinearLayout.LayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT, 
+							LinearLayout.LayoutParams.MATCH_PARENT));
+					layout.setOrientation(LinearLayout.VERTICAL);
 
-				TextView webAppListHeader = new TextView(mContext);
-				webAppListHeader.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT));
-				webAppListHeader.setGravity(Gravity.CENTER_HORIZONTAL);
-				webAppListHeader.setTextAppearance(mContext, 
-						android.R.style.TextAppearance_Holo_Large);
-				webAppListHeader.setText("Web Applications");
+					TextView webAppListHeader = new TextView(mContext);
+					webAppListHeader.setLayoutParams(new LinearLayout.LayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT, 
+							LinearLayout.LayoutParams.WRAP_CONTENT));
+					webAppListHeader.setGravity(Gravity.CENTER_HORIZONTAL);
+					webAppListHeader.setTextAppearance(mContext, 
+							android.R.style.TextAppearance_Holo_Large);
+					webAppListHeader.setText("Web Applications");
 
-				ListView webAppListView = new ListView(mContext);
-				webAppListView.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT));
+					ListView webAppListView = new ListView(mContext);
+					webAppListView.setLayoutParams(new LinearLayout.LayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT, 
+							LinearLayout.LayoutParams.WRAP_CONTENT));
 
-				TextView androidAppListHeader = new TextView(mContext);
-				androidAppListHeader.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT));
-				androidAppListHeader.setGravity(Gravity.CENTER_HORIZONTAL);
-				androidAppListHeader.setTextAppearance(mContext, 
-						android.R.style.TextAppearance_Holo_Large);
-				androidAppListHeader.setText("Android Applications");
+					TextView androidAppListHeader = new TextView(mContext);
+					androidAppListHeader.setLayoutParams(new LinearLayout.LayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT, 
+							LinearLayout.LayoutParams.WRAP_CONTENT));
+					androidAppListHeader.setGravity(Gravity.CENTER_HORIZONTAL);
+					androidAppListHeader.setTextAppearance(mContext, 
+							android.R.style.TextAppearance_Holo_Large);
+					androidAppListHeader.setText("Android Applications");
 
-				ListView androidAppListView = new ListView(mContext);
-				androidAppListView.setLayoutParams(new LinearLayout.LayoutParams(
-						LinearLayout.LayoutParams.MATCH_PARENT, 
-						LinearLayout.LayoutParams.WRAP_CONTENT));
+					ListView androidAppListView = new ListView(mContext);
+					androidAppListView.setLayoutParams(new LinearLayout.LayoutParams(
+							LinearLayout.LayoutParams.MATCH_PARENT, 
+							LinearLayout.LayoutParams.WRAP_CONTENT));
 
-				layout.addView(webAppListHeader);
-				layout.addView(webAppListView);
-				layout.addView(androidAppListHeader);
-				layout.addView(androidAppListView);
+					layout.addView(webAppListHeader);
+					layout.addView(webAppListView);
+					layout.addView(androidAppListHeader);
+					layout.addView(androidAppListView);
 
-				final Dialog dialog = new Dialog(mContext);
-				dialog.setContentView(layout);
+					final Dialog dialog = new Dialog(mContext);
+					dialog.setContentView(layout);
 
-				// Create the list of Web apps for selection
-				final WebAppArrayAdapter webAppArrayAdapter = new WebAppArrayAdapter(mContext, webAppList);
-				webAppListView.setAdapter(webAppArrayAdapter);
+					// Create the list of Web apps for selection
+					final WebAppArrayAdapter webAppArrayAdapter = new WebAppArrayAdapter(mContext, webAppList);
+					webAppListView.setAdapter(webAppArrayAdapter);
 
-				webAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+					webAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						dialog.dismiss();
+						@Override
+						public void onItemClick(AdapterView<?> parent, View view,
+								int position, long id) {
+							dialog.dismiss();
 
-						WebApp webApp = webAppArrayAdapter.getItem(position);
-						Intent newIntent = new Intent();
-						newIntent.putExtra("href", webApp.href);
-						newIntent.putExtra("action", oldIntent.getAction());
-						newIntent.putExtra("type", oldIntent.getType());
-						newIntent.putExtra("data", oldIntent.getStringExtra("webintents_data"));
-						newIntent.setComponent(new ComponentName("org.openintents.wiagent", 
-								"org.openintents.wiagent.ui.WebIntentsAgentActivity"));
+							WebApp webApp = webAppArrayAdapter.getItem(position);
+							Intent newIntent = new Intent();
+							newIntent.putExtra("href", webApp.href);
+							newIntent.putExtra("action", oldIntent.getAction());
+							newIntent.putExtra("type", oldIntent.getType());
+							newIntent.putExtra("data", oldIntent.getStringExtra("webintents_data"));
+							newIntent.setComponent(new ComponentName("org.openintents.wiagent", 
+									"org.openintents.wiagent.ui.WebIntentsAgentActivity"));
 
-						mContext.startActivity(newIntent);
+							mContext.startActivity(newIntent);
+						}
+					});
+
+					// Create the list of Android apps for selection. Use oldIntent as query intent
+					// committed to the package manager
+					List<ResolveInfo> androidAppList = mContext.getPackageManager().
+							queryIntentActivities(oldIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
+					if (androidAppList.size() == 0) {
+						androidAppListHeader.setVisibility(View.GONE);
+					} else {
+						AndroidAppArrayAdapter androidAppArrayAdapter = new AndroidAppArrayAdapter(mContext, androidAppList);
+						androidAppListView.setAdapter(androidAppArrayAdapter);
+
+						androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+							@Override
+							public void onItemClick(AdapterView<?> parent, View view, int position,
+									long id) {
+								dialog.dismiss();
+
+								Adapter adapter = (AndroidAppArrayAdapter) parent.getAdapter();
+								ResolveInfo ri = (ResolveInfo) adapter.getItem(position);                        
+								oldIntent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
+								mContext.startActivity(oldIntent);
+							}
+						});
 					}
-				});
 
-				// Create the list of Android apps for selection. Use oldIntent as query intent
-				// committed to the package manager
-				List<ResolveInfo> androidAppList = mContext.getPackageManager().
-						queryIntentActivities(oldIntent, PackageManager.MATCH_DEFAULT_ONLY);
-
-				AndroidAppArrayAdapter androidAppArrayAdapter = new AndroidAppArrayAdapter(mContext, androidAppList);
-				androidAppListView.setAdapter(androidAppArrayAdapter);
-
-				androidAppListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view, int position,
-							long id) {
-						dialog.dismiss();
-
-						Adapter adapter = (AndroidAppArrayAdapter) parent.getAdapter();
-						ResolveInfo ri = (ResolveInfo) adapter.getItem(position);                        
-						oldIntent.setClassName(ri.activityInfo.packageName, ri.activityInfo.name);
-						mContext.startActivity(oldIntent);
-					}
-				});
-
-				dialog.setTitle("Suggested Applications");
-				dialog.show();
+					dialog.setTitle("Suggested Applications");
+					dialog.show();
+				}
 			}
 		};
 

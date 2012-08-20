@@ -31,7 +31,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
@@ -42,7 +41,6 @@ import android.webkit.WebView;
 /**
  * A customized WebView class which adds Web Intents supports before loading Web
  * pages
- * @author Cheng Zheng
  *
  */
 public class CustomWebView extends WebView {
@@ -63,10 +61,10 @@ public class CustomWebView extends WebView {
 	static final int NOTIFICATION_ID_NEW_APP = 3;
 
 	/**
-	 * JavaScript support to inject for Intent and startActivity support
+	 * JavaScript scripts to support Intent class and startActivity support
 	 */
 	public static final String sScriptToInject =
-			"var Intent = function(action, type, data) {\n" +                
+			"var Intent = function(action, type, data) {\n" +
 				"this.action = action;\n" +
 				"this.type = type;\n" +
 				"this.data = data;\n" +
@@ -83,18 +81,26 @@ public class CustomWebView extends WebView {
 
 	private boolean mHasResult;
 
+	/**
+	 * The url for previous page
+	 */
 	private String mHistoryUrl;
+
+	/**
+	 * The url for current page
+	 */
 	private String mCurrentUrl;
 
 	/**
-	 * The urls of iframes in the loaded page
+	 * The urls of iframes in the currently loaded page
 	 */
 	private List<String> mIframeUrls;
 
 	private Context mContext;
 
 	/**
-	 * A stack keep history pages and their intent object if there is any
+	 * A stack keep history pages and their intent object if there is any.
+	 * The top of the stack is always the current loaded url.
 	 */
 	private Stack<HistoryStackEntry> mHistoryStack = new Stack<HistoryStackEntry>();
 
@@ -109,7 +115,11 @@ public class CustomWebView extends WebView {
 				LoadDataMessage obj = (LoadDataMessage) msg.obj;
 				String baseUrl = obj.mBaseUrl;
 				String data = obj.mHtml;
+
+				// Set the found iframes for this page
 				CustomWebView.this.mIframeUrls = obj.mIframeUrls;
+
+				// Current url become history url when loading a new page
 				CustomWebView.this.loadDataWithBaseURL(baseUrl, data, "text/html", "utf8", mCurrentUrl);
 				break;
 			}
@@ -118,7 +128,11 @@ public class CustomWebView extends WebView {
 				LoadDataMessage obj = (LoadDataMessage) msg.obj;
 				String baseUrl = obj.mBaseUrl;
 				String data = obj.mHtml;
+
+				// Set the found iframes for this page
 				CustomWebView.this.mIframeUrls = obj.mIframeUrls;
+
+				// Current url become history url when loading a new page
 				CustomWebView.this.loadDataWithBaseURL(baseUrl, data, "text/html", "utf8", mCurrentUrl);
 				break;
 			}
@@ -134,21 +148,21 @@ public class CustomWebView extends WebView {
 		super(context);
 	}
 
-	// Constructor for attributes in the AndroidManifest.xml
 	public CustomWebView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 	
 	/**
-	 * Return to the invoking page with data and postexecute script
+	 * Return to the previous page with resulting data and onSuccess script
 	 * @param data the result data
 	 * @param onSuccess the onSuccess callback in the form of String
 	 */
 	public void goBackWithData(String data, String onSuccess) {
 		if (!mHistoryStack.empty()) {
-			// Pop up current url
+			// Pop up current url and dispose of it
 			mCurrentUrl = ((HistoryStackEntry) mHistoryStack.pop()).url;
 			if (!mHistoryStack.empty()) {
+				// Pop up the history url and load it
 				mHistoryUrl = ((HistoryStackEntry) mHistoryStack.pop()).url;
 				WebIntent webIntent = new WebIntent();
 				webIntent.data = data;
@@ -187,29 +201,24 @@ public class CustomWebView extends WebView {
 
 		if (!mCurrentUrl.equals(mHistoryStack)) {
 			// If current page is different from the top history page, push it
-			// into the history stack
+			// into the history stack, avoiding pushing it again when reloading the page
 			mHistoryStack.push(new HistoryStackEntry(url, webIntent));
 		}
 
 		if (url.indexOf("http") == 0 || url.indexOf("https") == 0) {
-			// If the scheme is http or https, start a http connection thread
+		// If the scheme is http or https, start a http connection thread
 			HttpURLConnectionThread workerThread = new HttpURLConnectionThread(url, webIntent);
 			workerThread.start();
 		} else if (url.indexOf("file:") == 0) {
-			// If the scheme is file, start a file reader thread
+		// If the scheme is file, start a file reader thread
 			FileReaderThread workerThread = new FileReaderThread(url, webIntent);
 			workerThread.start();
 		} else {
-			// Invalid url, throw it to the super method
+		// Invalid url, throw it to the super loadUrl method
 			super.loadUrl(url);
 		}
 	}
 
-	/**
-	 * The inner thread class for http url connection
-	 * @author Cheng Zheng
-	 *
-	 */
 	private class HttpURLConnectionThread extends Thread {
 
 		final private String mUrl;
@@ -230,15 +239,17 @@ public class CustomWebView extends WebView {
 			try { 
 				urlConnection = (HttpURLConnection) (new URL(mUrl)).openConnection(); 
 
-				// Set cookies in requests
+				// Set cookies in the request message
 				CookieManager cookieManager = CookieManager.getInstance();                    
 				String cookie = cookieManager.getCookie(urlConnection.getURL().toString());
 				if (cookie != null) {
 					urlConnection.setRequestProperty("Cookie", cookie);
 				}
+
+				// Make connection
 				urlConnection.connect();
 
-				// Get cookies from responses and save into the cookie manager
+				// Get cookies from the response message and save into the cookie manager
 				List<String> cookieList = urlConnection.getHeaderFields().get("Set-Cookie");
 				if (cookieList != null) {
 					for (String cookieTemp : cookieList) {                         
@@ -246,8 +257,8 @@ public class CustomWebView extends WebView {
 					}
 				}
 
+				// Get the page data from the inputstream and parse it
 				InputStream in = new BufferedInputStream (urlConnection.getInputStream());
-
 				Document doc = Jsoup.parse(in, "UTF-8", mUrl.toString());
 
 				// Record src value of each iframe for later check
@@ -260,10 +271,11 @@ public class CustomWebView extends WebView {
 					}
 				}
 
-				Elements webintents = doc.select("intent");
-
-				// If there is any intent tag, register it
+				// Process the intent tags within this page
+				Elements webintents = doc.select("intent");				
 				if (webintents != null && webintents.size() != 0) {
+				// If there is any intent tag in this page, register its corresponding Web apps
+
 					AsyncTask<Elements, Void, Void> registerTask = new AsyncTask<Elements, Void, Void>() {
 
 						@Override
@@ -274,7 +286,7 @@ public class CustomWebView extends WebView {
 							ContentResolver cr = mContext.getContentResolver();
 
 							for (Element webintent : webintents) {
-								// Check if the service of this intent tag has been met before
+							// Check if the service of this intent tag has been met before
 
 								// If the url is a relative path, use current url as base url
 								String href = webintent.attr("href");
@@ -292,6 +304,7 @@ public class CustomWebView extends WebView {
 									}
 								}
 
+								// Set query parameters for new apps
 								String[] projection = {
 										WebIntentsProvider.WebIntents._ID
 								};
@@ -302,7 +315,7 @@ public class CustomWebView extends WebView {
 										webintent.attr("action"),
 										webintent.attr("type"),
 										href
-								}; 
+								};
 
 								Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
 
@@ -377,43 +390,37 @@ public class CustomWebView extends WebView {
 							"window.intent = intent;\n";
 				}
 
-                DataNode dataNode = new DataNode(scriptToPrepend, "");
-                doc.head().prependElement("script")
-                    .attr("type", "text/javascript")
-                    .prependChild(dataNode);
-                
-                // If the page contains some result data from services,
-                // append onSuccess script the end of body
-                if (mHasResult) {
-                    String scriptToAppend =
-                            "var onSuccess = " + mWebIntent.onSuccess.replace('\n', ' ') + ";\n" +
-                            "onSuccess('" + mWebIntent.data +
-                            "')"; 
-                    dataNode = new DataNode(scriptToAppend, "");
-                    doc.body().appendElement("script")
-                        .attr("type", "text/javascript")
-                        .prependChild(dataNode);
-                }
-                
-                obj.mBaseUrl = urlConnection.getURL().toString();
-                obj.mHtml = doc.outerHtml();
-                mUIThreadHandler.obtainMessage(HANDLER_WHAT_HTTPURLCONNECTIONTHREAD, obj).sendToTarget();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-            }
-        }
-        
-    }
-    
-	/**
-	 * The inner thread class for local file reader
-	 * @author Cheng Zheng
-	 *
-	 */
+				DataNode dataNode = new DataNode(scriptToPrepend, "");
+				doc.head().prependElement("script")
+					.attr("type", "text/javascript")
+					.prependChild(dataNode);
+
+				// If the page contains some result data from services,
+				// append onSuccess script the end of body
+				if (mHasResult) {
+					String scriptToAppend =
+							"var onSuccess = " + mWebIntent.onSuccess.replace('\n', ' ') + ";\n" +
+									"onSuccess('" + mWebIntent.data +
+									"')"; 
+					dataNode = new DataNode(scriptToAppend, "");
+					doc.body().appendElement("script")
+						.attr("type", "text/javascript")
+						.prependChild(dataNode);
+				}
+
+				obj.mBaseUrl = urlConnection.getURL().toString();
+				obj.mHtml = doc.outerHtml();
+				mUIThreadHandler.obtainMessage(HANDLER_WHAT_HTTPURLCONNECTIONTHREAD, obj).sendToTarget();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (urlConnection != null) {
+					urlConnection.disconnect();
+				}
+			}
+		}
+	}
+
 	private class FileReaderThread extends Thread {
 
 		final private String mUrl;
@@ -458,143 +465,144 @@ public class CustomWebView extends WebView {
 						protected Void doInBackground(Elements... params) {
 							boolean hasNew = false; // Indicate if there is any new applications
 
-                            Elements webintents = params[0];
-                            ContentResolver cr = mContext.getContentResolver();
+							Elements webintents = params[0];
+							ContentResolver cr = mContext.getContentResolver();
 
-                            for (Element webintent : webintents) {
-                            // Check if the service of this intent tag has been met before
-                                String[] projection = {
-                                    WebIntentsProvider.WebIntents._ID                         
-                                };
-                                String selection = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
-                                        WebIntentsProvider.WebIntents.TYPE + " = ? and " +
-                                        WebIntentsProvider.WebIntents.HREF + " = ?";
-                                String[] selectionArgs = {
-                                        webintent.attr("action"),
-                                        webintent.attr("type"),
-                                        webintent.attr("href")
-                                }; 
-                                
-                                Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
-                                
-                                if (!cursor.moveToFirst()) {
-                                	ContentValues values = new ContentValues();
-                                	values.put(WebIntents.ACTION, webintent.attr("action"));
-                                	values.put(WebIntents.TYPE, webintent.attr("type"));
-                                	values.put(WebIntents.HREF, webintent.attr("href"));
-                                	values.put(WebIntents.TITLE, webintent.attr("title"));
-                                	values.put(WebIntents.DISPOSITION, webintent.attr("disposition"));
-                                	cr.insert(WebIntentsProvider.WebIntents.CONTENT_URI, values);
-                                	hasNew = true;
-                                }
-                            }
+							for (Element webintent : webintents) {
+							// Check if the service of this intent tag has been met before
+								String[] projection = {
+										WebIntentsProvider.WebIntents._ID
+								};
+								String selection = WebIntentsProvider.WebIntents.ACTION + " = ? and " +
+										WebIntentsProvider.WebIntents.TYPE + " = ? and " +
+										WebIntentsProvider.WebIntents.HREF + " = ?";
+								String[] selectionArgs = {
+										webintent.attr("action"),
+										webintent.attr("type"),
+										webintent.attr("href")
+								}; 
 
-                            if (hasNew) {
-                            	// Build notifications for new apps found
-                            	NotificationManager nfManager = (NotificationManager) mContext
-                            			.getSystemService(Context.NOTIFICATION_SERVICE);
-                            	
-                            	Intent intent =  new Intent(mContext, WebAppManagementActivity.class);
-                            	PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
-                            	
-                            	Notification notification = new Notification.Builder(mContext)
-                            			.setContentTitle("New Applications Found")
-                            			.setSmallIcon(R.drawable.ic_notification)
-                            			.setContentIntent(contentIntent)
-                            			.setAutoCancel(true)
-                            			.getNotification();
-                            	
-                            	nfManager.notify(NOTIFICATION_ID_NEW_APP, notification);
+								Cursor cursor = cr.query(WebIntentsProvider.WebIntents.CONTENT_URI, projection, selection, selectionArgs, null);
+								
+								if (!cursor.moveToFirst()) {
+									ContentValues values = new ContentValues();
+									values.put(WebIntents.ACTION, webintent.attr("action"));
+									values.put(WebIntents.TYPE, webintent.attr("type"));
+									values.put(WebIntents.HREF, webintent.attr("href"));
+									values.put(WebIntents.TITLE, webintent.attr("title"));
+									values.put(WebIntents.DISPOSITION, webintent.attr("disposition"));
+									cr.insert(WebIntentsProvider.WebIntents.CONTENT_URI, values);
+									hasNew = true;
+								}
+								
+								cursor.close();
+							}
+
+							if (hasNew) {
+								// Build notifications for new apps found
+								NotificationManager nfManager = (NotificationManager) mContext
+										.getSystemService(Context.NOTIFICATION_SERVICE);
+
+								Intent intent =  new Intent(mContext, WebAppManagementActivity.class);
+								PendingIntent contentIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
+
+								Notification notification = new Notification.Builder(mContext)
+										.setContentTitle("New Applications Found")
+										.setSmallIcon(R.drawable.ic_notification)
+										.setContentIntent(contentIntent)
+										.setAutoCancel(true)
+										.getNotification();
+
+								nfManager.notify(NOTIFICATION_ID_NEW_APP, notification);
 
 								// Notify observers of changes of the table web_intents
-                            	cr.notifyChange(WebIntents.CONTENT_URI, null);
-                            }
+								cr.notifyChange(WebIntents.CONTENT_URI, null);
+							}
 
-                            return null;
-                        }
-                    };
-                    
-                    registerTask.execute(webintents);
-                }
-                
-                // Remove shim files
-                Elements scriptsWithSrc = doc.select("script[src]");
-                for (Element scriptWithSrc : scriptsWithSrc) {
-                    String value = scriptWithSrc.attr("src");
-                    if (value.contains("webintents.min.js") ||
-                            value.contains("webintents-prefix.js")) {
-                        scriptWithSrc.remove();
-                    }
-                }
-                
-                String scriptToPrepend = sScriptToInject;
-                
-                if (mWebIntent != null) {
-                    scriptToPrepend +=
-                        "var intent = new Intent();" +
-                            "intent.action = " + (mWebIntent.action == null ? "null" : "'" + mWebIntent.action + "'") + ";\n" +
-                            "intent.type = " + (mWebIntent.type == null ? "null" : "'" + mWebIntent.type + "'") + ";\n" +
-                            "intent.data = " + (mWebIntent.data == null ? "null" : "'" + mWebIntent.data + "'") + ";\n" +
-                            "intent.postResult = function(data) {\n" +
-                                "var onSuccess = " + (mWebIntent.onSuccess == null ? "null" : "'" + mWebIntent.onSuccess.replace('\n', ' ') + "'") + ";\n" +
-                                "navigatorAndroid.goBack(data, onSuccess);\n" +
-                            "};\n" +
-                        "window.intent = intent;\n";
-                }
-                
-                // Use DataNode to avoid change " to &quot; by JSoup automatically
-                DataNode dataNode = new DataNode(scriptToPrepend, "");                
-                doc.head().prependElement("script")
-                    .attr("type", "text/javascript")
-                    .prependChild(dataNode);
-                
-                // If the page contains some result data from services,
-                // append onSuccess script the end of body
-                if (mHasResult) {
-                    String scriptToAppend =
-                            "var onSuccess = " + mWebIntent.onSuccess.replace('\n', ' ') + ";\n" +
-                            "onSuccess('" + mWebIntent.data +
-                            "')"; 
-                    dataNode = new DataNode(scriptToAppend, "");           
-                    doc.body().appendElement("script")
-                        .attr("type", "text/javascript")
-                        .prependChild(dataNode);
-                }
-                
-                obj.mBaseUrl = null;
-                ContentResolver cr = mContext.getContentResolver();
-                String[] projection = {
-                        LocalServiceDomain.WEB_DOMAIN
-                };
-                String selection = LocalServiceDomain.WEB_HERF + " = ?";
-                String[] selectionArgs = {
-                        mUrl
-                };                
-                Cursor cursor = cr.query(LocalServiceDomain.CONTENT_URI, projection, selection, selectionArgs, null);
-                if (cursor.moveToNext()) {
-                    obj.mBaseUrl = cursor.getString(cursor.getColumnIndex(LocalServiceDomain.WEB_DOMAIN));
-                }
-                
-                obj.mHtml = doc.outerHtml();
-                mUIThreadHandler.obtainMessage(HANDLER_WHAT_HTTPURLCONNECTIONTHREAD, obj).sendToTarget();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-    }
+							return null;
+						}
+					};
+
+					registerTask.execute(webintents);
+				}
+
+				// Remove shim files
+				Elements scriptsWithSrc = doc.select("script[src]");
+				for (Element scriptWithSrc : scriptsWithSrc) {
+					String value = scriptWithSrc.attr("src");
+					if (value.contains("webintents.min.js") ||
+							value.contains("webintents-prefix.js")) {
+						scriptWithSrc.remove();
+					}
+				}
+
+				String scriptToPrepend = sScriptToInject;
+
+				if (mWebIntent != null) {
+					scriptToPrepend +=
+							"var intent = new Intent();" +
+								"intent.action = " + (mWebIntent.action == null ? "null" : "'" + mWebIntent.action + "'") + ";\n" +
+								"intent.type = " + (mWebIntent.type == null ? "null" : "'" + mWebIntent.type + "'") + ";\n" +
+								"intent.data = " + (mWebIntent.data == null ? "null" : "'" + mWebIntent.data + "'") + ";\n" +
+								"intent.postResult = function(data) {\n" +
+								"var onSuccess = " + (mWebIntent.onSuccess == null ? "null" : "'" + mWebIntent.onSuccess.replace('\n', ' ') + "'") + ";\n" +
+								"navigatorAndroid.goBack(data, onSuccess);\n" +
+							"};\n" +
+							"window.intent = intent;\n";
+				}
+
+				// Use DataNode to avoid change " to &quot; by JSoup automatically
+				DataNode dataNode = new DataNode(scriptToPrepend, "");                
+				doc.head().prependElement("script")
+					.attr("type", "text/javascript")
+					.prependChild(dataNode);
+
+				// If the page contains some result data from services,
+				// append onSuccess script the end of body
+				if (mHasResult) {
+					String scriptToAppend =
+							"var onSuccess = " + mWebIntent.onSuccess.replace('\n', ' ') + ";\n" +
+								"onSuccess('" + mWebIntent.data +
+							"')"; 
+					dataNode = new DataNode(scriptToAppend, "");           
+					doc.body().appendElement("script")
+						.attr("type", "text/javascript")
+						.prependChild(dataNode);
+				}
+
+				obj.mBaseUrl = null;
+				ContentResolver cr = mContext.getContentResolver();
+				String[] projection = {
+						LocalServiceDomain.WEB_DOMAIN
+				};
+				String selection = LocalServiceDomain.WEB_HERF + " = ?";
+				String[] selectionArgs = {
+						mUrl
+				};
+				Cursor cursor = cr.query(LocalServiceDomain.CONTENT_URI, projection, selection, selectionArgs, null);
+				if (cursor.moveToNext()) {
+					obj.mBaseUrl = cursor.getString(cursor.getColumnIndex(LocalServiceDomain.WEB_DOMAIN));
+				}
+
+				obj.mHtml = doc.outerHtml();
+				mUIThreadHandler.obtainMessage(HANDLER_WHAT_HTTPURLCONNECTIONTHREAD, obj).sendToTarget();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
 
 	/**
-	 * The class for obj field of message sent between HttpURLConnectionThread
-	 * and its handlers 
-	 * @author Cheng Zheng
+	 * A message class sent from HttpURLConnection and
+	 * FileReader threads to their handlers
 	 *
 	 */
 	static class LoadDataMessage {

@@ -3,43 +3,44 @@
 <head>
 <script src="http://webintents.org/webintents.min.js"></script>
 <script>
-      var shortUrl;
-      var intent = window.intent || window.webkitIntent;
-      var fetchData = function() {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {        	
-          if(xhr.readyState == 4 && xhr.status == 200) {
-            var result = JSON.parse(xhr.responseText);            
-            var resDiv = document.getElementById("result");
-            var shortDiv = document.getElementById("short");
-            var longDiv = document.getElementById("long");
-            var state = document.getElementById("state");
+	var shortUrl;
+	var intent = window.intent || window.webkitIntent;
+	var fetchData = function() {
+		var xhr = new XMLHttpRequest();
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4 && xhr.status == 200) {
+				var result = JSON.parse(xhr.responseText);
+				var resDiv = document.getElementById("result");
+				var shortDiv = document.getElementById("short");
+				var longDiv = document.getElementById("long");
+				var state = document.getElementById("state");
 
-            shortUrl = result.id;
-            shortDiv.innerText = shortUrl;
-            shortDiv.href = shortUrl;
+				shortUrl = result.id;
+				shortDiv.innerText = shortUrl;
+				shortDiv.href = shortUrl;
 
-            longDiv.innerText = intent.data;
-            state.innerText = "Result";
-            resDiv.style.display = "block";            
-          } 
-        };
+				longDiv.innerText = intent.data;
+				state.innerText = "Result";
+				resDiv.style.display = "block";
+			}
+		};
 
-        xhr.open("POST", "http://demos.webintents.org/shortener/shorten?url=" + intent.data);
-        xhr.send();
-      };
-        
-      window.addEventListener("DOMContentLoaded", function() {
-        if(intent) {
-          fetchData();
-        }
+		xhr.open("POST", "http://demos.webintents.org/shortener/shorten?url="
+				+ intent.data);
+		xhr.send();
+	};
 
-        var retButton = document.getElementById("return");
-        retButton.addEventListener("click", function() {
-          intent.postResult(shortUrl);          
-        });
-      }, false);
-    </script>
+	window.addEventListener("DOMContentLoaded", function() {
+		if (intent) {
+			fetchData();
+		}
+
+		var retButton = document.getElementById("return");
+		retButton.addEventListener("click", function() {
+			intent.postResult(shortUrl);
+		});
+	}, false);
+</script>
 <style>
 #short,#long {
 	font-weight: bold;

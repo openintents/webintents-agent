@@ -9,7 +9,14 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:singleLine="true"
+		android:editable="false"
 		android:text="@string/home_url" />
+
+	<ProgressBar
+		android:id="@+id/progressBar"
+		style="?android:attr/progressBarStyleHorizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" />
 
 	<org.openintents.wiagent.ui.widget.CustomWebView
 		android:id="@+id/webview"

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <string name="hello">Hello World, OIWebIntentsAgentActivity!</string>
-  <string name="app_name">OI WebIntents Agent</string>
-  <string name="app_management">Application management</string>
-  <string name="home_url">file:///android_asset/www/index.html</string>
+	<string name="app_name">OI WebIntents Agent</string>
+	<string name="app_management">Application management</string>
+	<string name="home_url">file:///android_asset/www/index.html</string>
+	<string name="dialog_app_chooser_title">Complete action using</string>
 
 </resources>

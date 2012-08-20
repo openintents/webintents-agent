@@ -6,8 +6,6 @@ import android.widget.AutoCompleteTextView;
 
 /**
  * The view class for address bar
- * @author Cheng Zheng
- *
  */
 public class UrlInputView extends AutoCompleteTextView {
 

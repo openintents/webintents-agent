@@ -15,10 +15,19 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
+/**
+ * A custom array adapter for web applications. This adapter is for list view
+ * with checkbox
+ *
+ */
+
 public class CheckedWebAppArrayAdapter extends ArrayAdapter<WebApp> {
 
+	/**
+	 * An array list of check indicators
+	 */
 	public ArrayList<Boolean> mCheckList;
-	
+
 	private List<WebApp> mWebAppList;
 	private LayoutInflater mInflater;
 
@@ -28,11 +37,17 @@ public class CheckedWebAppArrayAdapter extends ArrayAdapter<WebApp> {
 		mWebAppList = webAppList;
 		mInflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		
+
 		// Initialize the check list to all unchecked
 		mCheckList = new ArrayList<Boolean>();
 		for (int i = 0; i < webAppList.size(); i++) {
 			mCheckList.add(false);
+		}
+	}
+
+	public void setAllChecked(boolean checked) {
+		for (int i = 0; i < mCheckList.size(); i++) {
+			mCheckList.set(i, checked);
 		}
 	}
 

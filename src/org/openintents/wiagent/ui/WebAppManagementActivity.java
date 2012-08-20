@@ -7,15 +7,16 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 /**
  * The activity for the menu item Application Management
- * @author Cheng Zheng
  *
  */
 public class WebAppManagementActivity extends Activity {
@@ -53,7 +54,8 @@ public class WebAppManagementActivity extends Activity {
 					String[] projection = {
 							WebIntentsProvider.WebIntents._ID
 					};
-					String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0'";
+					String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0' and " + 
+							WebIntentsProvider.WebIntents.REMOVED + " = '0'";
 
 					Cursor cursor = getContentResolver().query(
 							WebIntentsProvider.WebIntents.CONTENT_URI, 
@@ -72,7 +74,8 @@ public class WebAppManagementActivity extends Activity {
 				@Override
 				protected void onPostExecute(Boolean hasNewApp) {
 					if (hasNewApp) {
-						final WebAppListFragment newWebAppListFragment = WebAppListFragment.newInstance(false);
+						final WebAppListFragment newWebAppListFragment = WebAppListFragment
+								.newInstance(WebAppListFragment.FLAG_NEW_FOUND);
 						ActionBar.Tab newApp = bar.newTab()
 								.setText("NEW FOUND")
 								.setTabListener(new ActionBar.TabListener() {
@@ -101,7 +104,8 @@ public class WebAppManagementActivity extends Activity {
 
 			hasNewApplicationTask.execute();
 
-			final WebAppListFragment myWebAppListFragment = WebAppListFragment.newInstance(true);
+			final WebAppListFragment myWebAppListFragment = WebAppListFragment
+					.newInstance(WebAppListFragment.FLAG_MYAPP);
 			bar.addTab(bar.newTab()
 					.setText("MY APP")
 					.setTabListener(new ActionBar.TabListener() {
@@ -122,7 +126,33 @@ public class WebAppManagementActivity extends Activity {
 							ft.add(R.id.main_container, myWebAppListFragment);
 						}
 					}));
+			
+			// The tab of applications in trash
+			final WebAppListFragment trashWebAppListFragment = WebAppListFragment
+					.newInstance(WebAppListFragment.FLAG_TRASH);
+			bar.addTab(bar.newTab()
+					.setText("TRASH")
+					.setTabListener(new ActionBar.TabListener() {
+
+						@Override
+						public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+							ft.remove(trashWebAppListFragment);
+						}
+
+						@Override
+						public void onTabSelected(Tab tab, FragmentTransaction ft) {
+							ft.add(R.id.main_container, trashWebAppListFragment);
+						}
+
+						@Override
+						public void onTabReselected(Tab tab, FragmentTransaction ft) {
+							ft.add(R.id.main_container, trashWebAppListFragment);
+						}
+					}));
 		} else {
+			// Set navigation up for handsets
+			getActionBar().setDisplayHomeAsUpEnabled(true);
+			
 			// Query the table 'web_intents' to see if there is any new
 			// found applications
 			AsyncTask<Void, Void, Boolean> hasNewApplicationTask =  new AsyncTask<Void, Void, Boolean> () {
@@ -132,7 +162,8 @@ public class WebAppManagementActivity extends Activity {
 					String[] projection = {
 							WebIntentsProvider.WebIntents._ID
 					};
-					String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0'";
+					String selection = WebIntentsProvider.WebIntents.BOOKMARKED + " = '0' and " +
+							WebIntentsProvider.WebIntents.REMOVED + " = '0'";
 
 					Cursor cursor = getContentResolver().query(
 							WebIntentsProvider.WebIntents.CONTENT_URI, 
@@ -153,7 +184,8 @@ public class WebAppManagementActivity extends Activity {
 					if (hasNewApp) {
 					// Create a new app tab and add it to the first position of 
 					// the action bar
-						final WebAppListFragment newWebAppListFragment = WebAppListFragment.newInstance(false);
+						final WebAppListFragment newWebAppListFragment = WebAppListFragment
+								.newInstance(WebAppListFragment.FLAG_NEW_FOUND);
 						ActionBar.Tab newApp = bar.newTab()
 								.setText("NEW FOUND")
 								.setTabListener(new ActionBar.TabListener() {
@@ -184,7 +216,8 @@ public class WebAppManagementActivity extends Activity {
 			hasNewApplicationTask.execute();
 
 			// The tab of my bookmarked applications
-			final WebAppListFragment myWebAppListFragment = WebAppListFragment.newInstance(true);
+			final WebAppListFragment myWebAppListFragment = WebAppListFragment
+					.newInstance(WebAppListFragment.FLAG_MYAPP);
 			bar.addTab(bar.newTab()
 					.setText("MY APP")
 					.setTabListener(new ActionBar.TabListener() {
@@ -204,6 +237,44 @@ public class WebAppManagementActivity extends Activity {
 							ft.add(R.id.main_container, myWebAppListFragment);
 						}
 					}));
+			
+			// The tab of applications in trash
+			final WebAppListFragment trashWebAppListFragment = WebAppListFragment
+					.newInstance(WebAppListFragment.FLAG_TRASH);
+			bar.addTab(bar.newTab()
+					.setText("TRASH")
+					.setTabListener(new ActionBar.TabListener() {
+
+						@Override
+						public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+							ft.remove(trashWebAppListFragment);
+						}
+
+						@Override
+						public void onTabSelected(Tab tab, FragmentTransaction ft) {
+							ft.add(R.id.main_container, trashWebAppListFragment);
+						}
+
+						@Override
+						public void onTabReselected(Tab tab, FragmentTransaction ft) {
+							ft.add(R.id.main_container, trashWebAppListFragment);
+						}
+					}));
+		}
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case android.R.id.home:
+			Intent intent = new Intent(getApplication(), WebIntentsAgentActivity.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(intent);
+
+			return true;
+
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 	}
 }
