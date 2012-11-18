@@ -9,7 +9,7 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_gravity="center"
-		android:layout_marginLeft="?android:attr/listPreferredItemPaddingLeft"
+		android:layout_marginLeft="8dip"
 		android:focusable="false" />
 
 	<LinearLayout
